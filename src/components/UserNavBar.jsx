@@ -53,7 +53,7 @@ const UserNavBar = () => {
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center gap-6">
             <Link
-              to="/explore"
+              to="/dashboard"
               onClick={() => setActiveTab("explore")}
               className={`px-4 py-2 rounded-full font-medium transition-colors ${
                 activeTab === "explore"
