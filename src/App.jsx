@@ -41,7 +41,7 @@ function App() {
 
           {/* User Routes */}
           <Route
-            path="/explore"
+            path="/dashboard"
             element={
               <PrivateRoute>
                 <UserDashboard />
