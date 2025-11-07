@@ -8,6 +8,7 @@ import AdminCategories from "./pages/Admin/AdminCategories";
 import AdminReports from "./pages/Admin/AdminReports";
 import UserDashboard from "./pages/User/UserDashboard";
 import UserLibrary from "./pages/User/UserLibrary";
+import BookView from "./pages/User/BookView";
 import PrivateRoute from "./lib/PrivateRoute";
 import { AuthProvider } from "./context/AuthContext";
 import "./App.css";
@@ -54,6 +55,15 @@ function App() {
             element={
               <PrivateRoute>
                 <UserLibrary />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/dashboard/book/:bookId"
+            element={
+              <PrivateRoute>
+                <BookView />
               </PrivateRoute>
             }
           />
