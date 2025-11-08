@@ -1,7 +1,6 @@
-// Updated BookView.jsx (aesthetic improvements, reduced spacing)
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import UserNavbar from "../../components/UserNavbar";
+import UserNavbar from "../../components/UserNavBar.jsx";
 
 const theme = {
   bg: "#f8f1e4",
