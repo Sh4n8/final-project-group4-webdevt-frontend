@@ -11,6 +11,11 @@ import UserLibrary from "./pages/User/UserLibrary";
 import BookView from "./pages/User/BookView";
 import Reader from "./pages/User/Reader";
 import PrivateRoute from "./lib/PrivateRoute";
+
+import Profile from "./pages/UserProfile/Profile";
+import Settings from "./pages/UserProfile/Settings";
+import Help from "./pages/UserProfile/Help";
+
 import { AuthProvider } from "./context/AuthContext";
 import "./App.css";
 import "./index.css";
@@ -50,7 +55,6 @@ function App() {
               </PrivateRoute>
             }
           />
-
           <Route
             path="/library"
             element={
@@ -59,7 +63,32 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute>
+                <Settings />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/help"
+            element={
+              <PrivateRoute>
+                <Help />
+              </PrivateRoute>
+            }
+          />
 
+          {/* Book and Reader Routes */}
           <Route
             path="/dashboard/book/:bookId"
             element={
@@ -75,7 +104,7 @@ function App() {
                 <Reader />
               </PrivateRoute>
             }
-            />
+          />
         </Routes>
       </AuthProvider>
     </Router>
