@@ -9,6 +9,7 @@ import AdminReports from "./pages/Admin/AdminReports";
 import UserDashboard from "./pages/User/UserDashboard";
 import UserLibrary from "./pages/User/UserLibrary";
 import BookView from "./pages/User/BookView";
+import Reader from "./pages/User/Reader";
 import PrivateRoute from "./lib/PrivateRoute";
 import { AuthProvider } from "./context/AuthContext";
 import "./App.css";
@@ -67,6 +68,14 @@ function App() {
               </PrivateRoute>
             }
           />
+          <Route
+            path="/reader/:bookId"
+            element={
+              <PrivateRoute>
+                <Reader />
+              </PrivateRoute>
+            }
+            />
         </Routes>
       </AuthProvider>
     </Router>

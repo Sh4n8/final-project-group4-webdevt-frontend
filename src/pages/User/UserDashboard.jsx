@@ -4,13 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import UserNavBar from "../../components/UserNavBar";
 
-/*
-  UserLibrary:
-  - Displays two sections (Trending & E-Resources & Journals)
-  - Uses Gutendex API to fetch lists
-  - Clicking a book navigates to /dashboard/book/:id
-*/
-
 const theme = {
   bg: "#f8f1e4",
   panel: "#e6d6b8",
@@ -19,8 +12,13 @@ const theme = {
 };
 
 const BookCard = ({ book, onView }) => {
-  const cover = book.formats["image/jpeg"] || "https://via.placeholder.com/200x300?text=No+Cover";
-  const author = book.authors && book.authors.length > 0 ? book.authors[0].name : "Unknown Author";
+  const cover =
+    book.formats["image/jpeg"] ||
+    "https://via.placeholder.com/200x300?text=No+Cover";
+  const author =
+    book.authors && book.authors.length > 0
+      ? book.authors[0].name
+      : "Unknown Author";
 
   return (
     <div
@@ -30,37 +28,71 @@ const BookCard = ({ book, onView }) => {
     >
       <img src={cover} alt={book.title} className="w-full h-44 object-cover" />
       <div className="p-3">
-        <h3 className="text-sm font-semibold truncate" style={{ color: theme.text }}>{book.title}</h3>
-        <p className="text-xs mt-1" style={{ color: "#6b5446" }}>{author}</p>
+        <h3
+          className="text-sm font-semibold truncate"
+          style={{ color: theme.text }}
+        >
+          {book.title}
+        </h3>
+        <p className="text-xs mt-1" style={{ color: "#6b5446" }}>
+          {author}
+        </p>
       </div>
     </div>
   );
 };
 
-const Section = ({ title, books, loading, onView }) => (
-  <div className="mb-8">
-    <div className="flex items-center justify-between mb-4">
-      <h2 className="text-xl font-serif" style={{ color: theme.text }}>{title}</h2>
-      <span className="text-sm text-gray-600">View All</span>
-    </div>
+const Section = ({
+  title,
+  books,
+  loading,
+  onView,
+  showAll,
+  toggleShowAll,
+}) => {
+  const visibleBooks = showAll ? books : books.slice(0, 5);
 
-    {loading ? (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-44 rounded-lg animate-pulse" style={{ background: "#eadfc6" }}></div>
-        ))}
+  return (
+    <div className="mb-10">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-serif" style={{ color: theme.text }}>
+          {title}
+        </h2>
+        {books.length > 5 && (
+          <button
+            onClick={toggleShowAll}
+            className="text-sm font-medium underline hover:text-brown-700"
+            style={{ color: theme.accent }}
+          >
+            {showAll ? "Show Less" : "View All"}
+          </button>
+        )}
       </div>
-    ) : books.length > 0 ? (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        {books.map((b) => (
-          <BookCard key={b.id} book={b} onView={onView} />
-        ))}
-      </div>
-    ) : (
-      <p className="text-sm" style={{ color: "#6b5446" }}>No results.</p>
-    )}
-  </div>
-);
+
+      {loading ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-44 rounded-lg animate-pulse"
+              style={{ background: "#eadfc6" }}
+            ></div>
+          ))}
+        </div>
+      ) : books.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {visibleBooks.map((b) => (
+            <BookCard key={b.id} book={b} onView={onView} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm" style={{ color: "#6b5446" }}>
+          No results.
+        </p>
+      )}
+    </div>
+  );
+};
 
 const UserLibrary = () => {
   const { user } = useContext(AuthContext);
@@ -68,97 +100,76 @@ const UserLibrary = () => {
 
   const [trending, setTrending] = useState([]);
   const [journals, setJournals] = useState([]);
-  const [search, setSearch] = useState("");
+  const [academic, setAcademic] = useState([]);
+  const [digital, setDigital] = useState([]);
+
   const [loadingTrending, setLoadingTrending] = useState(true);
   const [loadingJournals, setLoadingJournals] = useState(true);
+  const [loadingAcademic, setLoadingAcademic] = useState(true);
+  const [loadingDigital, setLoadingDigital] = useState(true);
+
+  const [showAllTrending, setShowAllTrending] = useState(false);
+  const [showAllJournals, setShowAllJournals] = useState(false);
+  const [showAllAcademic, setShowAllAcademic] = useState(false);
+  const [showAllDigital, setShowAllDigital] = useState(false);
 
   useEffect(() => {
-    // Trending: use 'fiction' as default trending query
-    const fetchTrending = async () => {
-      setLoadingTrending(true);
+    const fetchBooks = async (query, setter, loaderSetter) => {
+      loaderSetter(true);
       try {
-        const res = await fetch(`https://gutendex.com/books/?search=fiction&mime_type=text&languages=en&page=1`);
+        const res = await fetch(
+          `https://gutendex.com/books/?search=${encodeURIComponent(
+            query
+          )}&mime_type=text&languages=en&page=1`
+        );
         const data = await res.json();
-        setTrending(data.results || []);
+        setter(data.results || []);
       } catch (err) {
-        console.error("Trending fetch error:", err);
+        console.error(`${query} fetch error:`, err);
       } finally {
-        setLoadingTrending(false);
+        loaderSetter(false);
       }
     };
 
-    // E-Resources & Journals: use 'education' topic
-    const fetchJournals = async () => {
-      setLoadingJournals(true);
-      try {
-        const res = await fetch(`https://gutendex.com/books/?search=education&mime_type=text&languages=en&page=1`);
-        const data = await res.json();
-        setJournals(data.results || []);
-      } catch (err) {
-        console.error("Journals fetch error:", err);
-      } finally {
-        setLoadingJournals(false);
-      }
-    };
-
-    fetchTrending();
-    fetchJournals();
+    fetchBooks("fiction", setTrending, setLoadingTrending); // Trending
+    fetchBooks("education", setJournals, setLoadingJournals); // E-Resources & Journals
+    fetchBooks("academic", setAcademic, setLoadingAcademic); // Academic References
   }, []);
 
   const handleView = (id) => {
     navigate(`/dashboard/book/${id}`);
   };
 
-  const handleSearch = async (q) => {
-    if (!q || q.trim() === "") return;
-    // perform a quick search and populate trending section with results
-    setLoadingTrending(true);
-    try {
-      const res = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(q)}&mime_type=text&languages=en`);
-      const data = await res.json();
-      setTrending(data.results || []);
-    } catch (err) {
-      console.error("Search error:", err);
-    } finally {
-      setLoadingTrending(false);
-    }
-  };
-
   return (
     <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text }}>
       <UserNavBar />
       <div className="container mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-serif" style={{ color: theme.text }}>LibroLink</h1>
-            <p className="text-sm" style={{ color: "#6b5446" }}>Library Management System</p>
-          </div>
+        <Section
+          title="Trending"
+          books={trending}
+          loading={loadingTrending}
+          onView={handleView}
+          showAll={showAllTrending}
+          toggleShowAll={() => setShowAllTrending(!showAllTrending)}
+        />
 
-          <div className="flex items-center gap-4">
-            <input
-              type="text"
-              placeholder="Search books, authors, topics..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="px-4 py-2 rounded-md border"
-              style={{ background: "#fff", color: theme.text }}
-            />
-            <button
-              onClick={() => handleSearch(search)}
-              className="px-4 py-2 rounded-md"
-              style={{ background: theme.accent, color: "#fff" }}
-            >
-              Search
-            </button>
-            <div style={{ color: theme.text }}>{user?.username || "Username"}</div>
-          </div>
-        </div>
+        <Section
+          title="E-Resources & Journals"
+          books={journals}
+          loading={loadingJournals}
+          onView={handleView}
+          showAll={showAllJournals}
+          toggleShowAll={() => setShowAllJournals(!showAllJournals)}
+        />
 
-        {/* Trending */}
-        <Section title="Trending" books={trending} loading={loadingTrending} onView={handleView} />
-
-        {/* E-Resources & Journals */}
-        <Section title="E-Resources & Journals" books={journals} loading={loadingJournals} onView={handleView} />
+        <Section
+          title="Academic References"
+          books={academic}
+          loading={loadingAcademic}
+          onView={handleView}
+          showAll={showAllAcademic}
+          toggleShowAll={() => setShowAllAcademic(!showAllAcademic)}
+        />
       </div>
     </div>
   );
