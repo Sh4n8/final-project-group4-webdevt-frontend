@@ -34,17 +34,11 @@ const AuthProvider = ({ children }) => {
   // signup
   const signup = async (email, username, password, userType = "user") => {
     const users = getAllUsers();
-
-    // Check if email or username already exists
     const emailExists = users.some((u) => u.email === email);
     const usernameExists = users.some((u) => u.username === username);
 
-    if (emailExists) {
-      throw new Error("Email already exists. Please log in instead.");
-    }
-    if (usernameExists) {
-      throw new Error("Username already exists. Please choose another one.");
-    }
+    if (emailExists) throw new Error("Email already exists.");
+    if (usernameExists) throw new Error("Username already exists.");
 
     try {
       const resp = await api.post(`/api/auth/signup`, {
@@ -53,28 +47,17 @@ const AuthProvider = ({ children }) => {
         password,
         userType,
       });
-      const respUser = resp.data.user || {
-        email,
-        username,
-        password,
-        userType,
-      };
+      const respUser = resp.data.user || { email, username, password, userType };
       const token = resp.data.token || `mock-token-${Date.now()}`;
-
-      // Add to registered users
       users.push({ email, username, password, userType });
       saveAllUsers(users);
 
       localStorage.setItem("token", token);
       setAuthToken(token);
-      const newUser = { ...respUser, token };
-      setUser(newUser);
+      setUser({ ...respUser, token });
     } catch (err) {
-      console.warn("Signup failed, using mock:", err);
       const mockToken = `mock-token-${Date.now()}`;
       const newUser = { email, username, password, userType, token: mockToken };
-
-      // Add to registered users
       users.push({ email, username, password, userType });
       saveAllUsers(users);
 
@@ -89,32 +72,22 @@ const AuthProvider = ({ children }) => {
   // login
   const login = async (credential, password, userType = "user") => {
     const users = getAllUsers();
-
-    // Find matching user
     const matchedUser = users.find(
       (u) =>
         (u.email === credential || u.username === credential) &&
         u.password === password &&
         u.userType === userType
     );
-
-    if (!matchedUser) {
-      throw new Error("Invalid credentials or user type.");
-    }
+    if (!matchedUser) throw new Error("Invalid credentials or user type.");
 
     try {
-      const resp = await api.post(`/api/auth/login`, {
-        credential,
-        password,
-        userType,
-      });
+      const resp = await api.post(`/api/auth/login`, { credential, password, userType });
       const respUser = resp.data.user || matchedUser;
       const token = resp.data.token || `mock-token-${Date.now()}`;
       localStorage.setItem("token", token);
       setAuthToken(token);
       setUser({ ...respUser, token });
-    } catch (err) {
-      console.warn("Login failed, using mock:", err);
+    } catch {
       const mockToken = `mock-token-${Date.now()}`;
       const newUser = { ...matchedUser, token: mockToken };
       localStorage.setItem("token", mockToken);
@@ -142,6 +115,24 @@ const AuthProvider = ({ children }) => {
     );
   };
 
+  // **New: update user data**
+  const updateUser = (updates) => {
+    setUser((prev) => {
+      const updatedUser = { ...prev, ...updates };
+      
+      // Update the registeredUsers array too
+      const users = getAllUsers();
+      const idx = users.findIndex(u => u.username === prev.username);
+      if (idx !== -1) {
+        users[idx] = { ...users[idx], ...updates };
+        saveAllUsers(users);
+      }
+
+      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+      return updatedUser;
+    });
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -149,6 +140,7 @@ const AuthProvider = ({ children }) => {
         signup,
         login,
         logout,
+        updateUser, // expose updateUser
         isAuthenticated: () => !!user,
         isAdmin: () => user?.userType === "admin",
         checkCredentialExists,

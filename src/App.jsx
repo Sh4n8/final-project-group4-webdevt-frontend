@@ -9,6 +9,11 @@ import AdminReports from "./pages/Admin/AdminReports";
 import UserDashboard from "./pages/User/UserDashboard";
 import UserLibrary from "./pages/User/UserLibrary";
 import PrivateRoute from "./lib/PrivateRoute";
+
+import Profile from "./pages/UserProfile/Profile";
+import Settings from "./pages/UserProfile/Settings";
+import Help from "./pages/UserProfile/Help";
+
 import { AuthProvider } from "./context/AuthContext";
 import "./App.css";
 import "./index.css";
@@ -54,6 +59,33 @@ function App() {
             element={
               <PrivateRoute>
                 <UserLibrary />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute>
+                <Settings />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/help"
+            element={
+              <PrivateRoute>
+                <Help />
               </PrivateRoute>
             }
           />

@@ -53,7 +53,7 @@ const UserNavBar = () => {
           {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center gap-6">
             <Link
-              to="/explore"
+              to="/dashboard"
               onClick={() => setActiveTab("explore")}
               className={`px-4 py-2 rounded-full font-medium transition-colors ${
                 activeTab === "explore"
@@ -175,24 +175,27 @@ const UserNavBar = () => {
 
               {isProfileOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                  <a
-                    href="#profile"
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsProfileOpen(false)}
                     className="block px-4 py-2 text-[#5D4E37] hover:bg-[#F5E6D3] transition-colors"
                   >
                     Profile
-                  </a>
-                  <a
-                    href="#settings"
+                  </Link>
+                  <Link
+                    to="/settings"
+                    onClick={() => setIsProfileOpen(false)}
                     className="block px-4 py-2 text-[#5D4E37] hover:bg-[#F5E6D3] transition-colors"
                   >
                     Settings
-                  </a>
-                  <a
-                    href="#help"
+                  </Link>
+                  <Link
+                    to="/help"
+                    onClick={() => setIsProfileOpen(false)}
                     className="block px-4 py-2 text-[#5D4E37] hover:bg-[#F5E6D3] transition-colors"
                   >
                     Help
-                  </a>
+                  </Link>
                   <div className="border-t border-[#D4B896] my-2"></div>
                   <button
                     onClick={logout}
@@ -264,7 +267,7 @@ const UserNavBar = () => {
               </div>
 
               <Link
-                to="/explore"
+                to="/dashboard"
                 className="text-[#5D4E37] hover:text-[#8B7355] font-medium transition-colors px-4"
               >
                 Explore
