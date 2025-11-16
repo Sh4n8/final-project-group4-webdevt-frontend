@@ -9,7 +9,9 @@ const UserNavBar = () => {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("explore");
 
-  const avatarLetter = user?.username?.charAt(0).toUpperCase() || "U";
+  // ← NEW: use the name you entered on Sign-Up
+  const displayName = user?.name || "Username";
+  const avatarLetter = displayName.charAt(0).toUpperCase();
 
   const categories = [
     "Dynamic Categories",
@@ -97,13 +99,13 @@ const UserNavBar = () => {
 
               {isCategoryOpen && (
                 <div className="absolute left-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-3 z-50">
-                  {categories.map((category, index) => (
+                  {categories.map((cat, i) => (
                     <a
-                      key={index}
-                      href={`#${category.toLowerCase().replace(/\s+/g, "-")}`}
+                      key={i}
+                      href={`#${cat.toLowerCase().replace(/\s+/g, "-")}`}
                       className="block px-4 py-2 text-[#5D4E37] hover:bg-[#F5E6D3] transition-colors"
                     >
-                      {category}
+                      {cat}
                     </a>
                   ))}
                 </div>
@@ -155,7 +157,8 @@ const UserNavBar = () => {
                 <div className="w-9 h-9 bg-[#8B7355] rounded-full flex items-center justify-center text-white font-semibold">
                   {avatarLetter}
                 </div>
-                <span>{user?.username || "Username"}</span>
+                {/* ← DISPLAY NAME */}
+                <span>{displayName}</span>
                 <svg
                   className={`w-4 h-4 transition-transform ${
                     isProfileOpen ? "rotate-180" : ""
@@ -253,8 +256,9 @@ const UserNavBar = () => {
                 <div className="w-9 h-9 bg-[#8B7355] rounded-full flex items-center justify-center text-white font-semibold">
                   {avatarLetter}
                 </div>
+                {/* ← DISPLAY NAME (mobile) */}
                 <span className="text-[#5D4E37] font-medium">
-                  {user?.username || "Username"}
+                  {displayName}
                 </span>
               </div>
 
