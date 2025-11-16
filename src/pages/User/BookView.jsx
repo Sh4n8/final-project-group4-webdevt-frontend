@@ -1,101 +1,360 @@
-// Updated BookView.jsx (aesthetic improvements, reduced spacing)
+// src/pages/User/BookView.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import UserNavbar from "../../components/UserNavbar";
+import { getBookById } from "../../lib/api";
+import UserNavBar from "../../components/UserNavBar";
 
 const theme = {
   bg: "#f8f1e4",
-  panel: "#f2e1c3",
+  panel: "#e6d6b8",
   text: "#3b2f2f",
   accent: "#7b4b26",
-  muted: "#6b5446",
 };
 
 const BookView = () => {
   const { bookId } = useParams();
   const navigate = useNavigate();
   const [book, setBook] = useState(null);
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const [selectedLists, setSelectedLists] = useState({
+    readingList: false,
+    favorites: false,
+    thesis: false,
+    journals: false,
+  });
 
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        const res = await fetch(`https://gutendex.com/books/${bookId}`);
-        if (!res.ok) throw new Error("Failed to load book details.");
-        const data = await res.json();
-        setBook(data);
+        console.log("Fetching book with ID:", bookId);
+        const res = await getBookById(bookId);
+        console.log("Book data received:", res.data);
+        setBook(res.data);
       } catch (err) {
-        setError(err.message);
+        console.error("Error fetching book:", err);
+        console.error("Error details:", err.response?.data || err.message);
       } finally {
         setLoading(false);
       }
     };
-    if (bookId) fetchBook();
+
+    if (bookId) {
+      fetchBook();
+    } else {
+      setLoading(false);
+    }
   }, [bookId]);
 
-  if (loading)
+  const handleToggleList = (list) => {
+    setSelectedLists((prev) => ({
+      ...prev,
+      [list]: !prev[list],
+    }));
+  };
+
+  const handleDone = () => {
+    // Save to localStorage for now
+    const bookData = {
+      googleId: book.googleId,
+      title: book.title,
+      authors: book.authors,
+      thumbnail: book.thumbnail,
+      categories: book.categories,
+    };
+
+    Object.keys(selectedLists).forEach((listName) => {
+      if (selectedLists[listName]) {
+        const currentList = JSON.parse(localStorage.getItem(listName) || "[]");
+
+        // Check if book already exists
+        const exists = currentList.some((b) => b.googleId === book.googleId);
+
+        if (!exists) {
+          currentList.push(bookData);
+          localStorage.setItem(listName, JSON.stringify(currentList));
+        }
+      }
+    });
+
+    alert("Book added to your library!");
+    setShowAddMenu(false);
+  };
+
+  if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center text-2xl" style={{ background: theme.bg, color: theme.text }}>
-        Loading book details...
+      <div style={{ minHeight: "100vh", background: theme.bg }}>
+        <UserNavBar />
+        <div className="container mx-auto px-6 py-8 flex justify-center items-center">
+          <div className="animate-pulse text-lg" style={{ color: theme.text }}>
+            Loading book...
+          </div>
+        </div>
       </div>
     );
+  }
 
-  if (error)
+  if (!book) {
     return (
-      <div className="h-screen flex items-center justify-center text-2xl" style={{ background: theme.bg, color: theme.text }}>
-        Error: {error}
+      <div style={{ minHeight: "100vh", background: theme.bg }}>
+        <UserNavBar />
+        <div className="container mx-auto px-6 py-8 text-center">
+          <p className="text-lg" style={{ color: theme.text }}>
+            Book not found
+          </p>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="mt-4 px-6 py-2 rounded-lg text-white"
+            style={{ background: theme.accent }}
+          >
+            Back to Library
+          </button>
+        </div>
       </div>
     );
+  }
 
-  if (!book)
-    return (
-      <div className="h-screen flex items-center justify-center text-2xl" style={{ background: theme.bg, color: theme.text }}>
-        Book not found.
-      </div>
-    );
-
-  const cover = book.formats["image/jpeg"];
-  const authors = book.authors?.map((a) => a.name).join(", ") || "Unknown Author";
+  const authors = Array.isArray(book.authors)
+    ? book.authors.join(", ")
+    : "Unknown Author";
+  const thumbnail =
+    book.thumbnail || "https://via.placeholder.com/400x600?text=No+Cover";
+  const pageCount = book.pageCount || "Unknown";
+  const publishedDate = book.publishedDate
+    ? new Date(book.publishedDate).getFullYear()
+    : "Unknown";
+  const categories = Array.isArray(book.categories)
+    ? book.categories.join(", ")
+    : "Uncategorized";
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: theme.bg, color: theme.text }}>
-      <UserNavbar />
-
-      <div className="flex flex-col md:flex-row items-center justify-center flex-1 px-8 py-12 gap-4 md:gap-6">
-        {/* Book Cover */}
-        <div className="flex justify-center md:justify-end w-full md:w-auto">
-          {cover ? (
-            <img src={cover} alt={book.title} className="w-80 md:w-[30rem] rounded-3xl shadow-xl" />
-          ) : (
-            <div className="w-64 h-[26rem] bg-gray-300 rounded-3xl"></div>
-          )}
-        </div>
-
-        {/* Book Details */}
-        <div className="max-w-3xl rounded-3xl shadow-lg p-8 md:p-10" style={{ background: theme.panel }}>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 font-serif leading-tight">{book.title}</h1>
-          <p className="text-lg mb-6 italic" style={{ color: theme.muted }}>by {authors}</p>
-
-          {/* Stats */}
-          <div className="flex flex-wrap gap-6 mb-6 text-base" style={{ color: theme.muted }}>
-            <div className="flex items-center gap-1"><span>👁️</span> <span>2.5M Reads</span></div>
-            <div className="flex items-center gap-1"><span>❤️</span> <span>10.3K Favorites</span></div>
-            <div className="flex items-center gap-1"><span>🧾</span> <span>{(book.bookshelves?.length || 0) + 1} Parts</span></div>
+    <div style={{ minHeight: "100vh", background: theme.bg }}>
+      <UserNavBar />
+      <div className="container mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left: Book Cover */}
+          <div className="lg:col-span-1">
+            <div
+              className="rounded-lg overflow-hidden shadow-lg"
+              style={{ background: theme.panel }}
+            >
+              <img
+                src={thumbnail}
+                alt={book.title}
+                className="w-full h-auto object-cover"
+                onError={(e) => {
+                  e.target.src =
+                    "https://via.placeholder.com/400x600?text=No+Cover";
+                }}
+              />
+            </div>
           </div>
 
-          <h2 className="text-2xl font-semibold mb-2 font-serif">Abstract</h2>
-          <p className="text-base leading-relaxed mb-8" style={{ color: theme.muted }}>
-            {book.subjects?.length > 0 ? `Subjects: ${book.subjects.slice(0, 6).join(", ")}` : "No description available."}
-          </p>
+          {/* Right: Book Info */}
+          <div className="lg:col-span-2">
+            <h1
+              className="text-3xl font-serif font-bold mb-2"
+              style={{ color: theme.text }}
+            >
+              {book.title}
+            </h1>
+            <p className="text-lg mb-4" style={{ color: "#6b5446" }}>
+              {book.subtitle || `By ${authors}`}
+            </p>
 
-          <button
-            onClick={() => navigate(`/reader/${bookId}`)}
-            className="px-8 py-3 rounded-xl font-semibold text-lg shadow-md transition-transform duration-200 hover:scale-105"
-            style={{ background: theme.accent, color: "#fff" }}
-          >
-            Start Reading
-          </button>
+            {/* Book Stats */}
+            <div className="flex flex-wrap gap-4 mb-6">
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-sm font-medium"
+                  style={{ color: theme.text }}
+                >
+                  📄 Pages:
+                </span>
+                <span className="text-sm" style={{ color: "#6b5446" }}>
+                  {pageCount}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-sm font-medium"
+                  style={{ color: theme.text }}
+                >
+                  📅 Published:
+                </span>
+                <span className="text-sm" style={{ color: "#6b5446" }}>
+                  {publishedDate}
+                </span>
+              </div>
+              {book.publisher && (
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-sm font-medium"
+                    style={{ color: theme.text }}
+                  >
+                    🏢 Publisher:
+                  </span>
+                  <span className="text-sm" style={{ color: "#6b5446" }}>
+                    {book.publisher}
+                  </span>
+                </div>
+              )}
+              {book.averageRating && (
+                <div className="flex items-center gap-2">
+                  <span
+                    className="text-sm font-medium"
+                    style={{ color: theme.text }}
+                  >
+                    ⭐ Rating:
+                  </span>
+                  <span className="text-sm" style={{ color: "#6b5446" }}>
+                    {book.averageRating} ({book.ratingsCount || 0} reviews)
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Categories */}
+            <div className="mb-6">
+              <span
+                className="text-sm font-medium"
+                style={{ color: theme.text }}
+              >
+                📚 Categories:
+              </span>
+              <p className="text-sm mt-1" style={{ color: "#6b5446" }}>
+                {categories}
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 mb-8 relative">
+              <button
+                className="px-6 py-3 rounded-lg text-white font-medium hover:opacity-90 transition"
+                style={{ background: theme.accent }}
+                onClick={() => {
+                  // Try multiple preview options
+                  if (book.previewLink) {
+                    window.open(book.previewLink, "_blank");
+                  } else if (book.infoLink) {
+                    window.open(book.infoLink, "_blank");
+                  } else if (book.googleId) {
+                    // Fallback: construct Google Books URL directly
+                    window.open(
+                      `https://books.google.com/books?id=${book.googleId}`,
+                      "_blank"
+                    );
+                  } else {
+                    alert("Preview not available for this book");
+                  }
+                }}
+              >
+                Start Reading
+              </button>
+              <button
+                className="px-6 py-3 rounded-lg font-medium border-2 hover:opacity-90 transition relative"
+                style={{
+                  background: theme.panel,
+                  borderColor: theme.accent,
+                  color: theme.accent,
+                }}
+                onClick={() => setShowAddMenu(!showAddMenu)}
+              >
+                Add to +
+              </button>
+
+              {/* Add to Menu Dropdown */}
+              {showAddMenu && (
+                <div
+                  className="absolute top-full mt-2 right-0 rounded-lg shadow-lg p-4 z-10 w-64"
+                  style={{ background: theme.panel }}
+                >
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="font-semibold" style={{ color: theme.text }}>
+                      Add to
+                    </h3>
+                    <button
+                      onClick={handleDone}
+                      className="text-sm font-medium hover:underline"
+                      style={{ color: theme.accent }}
+                    >
+                      Done
+                    </button>
+                  </div>
+
+                  {/* List Options */}
+                  <div className="space-y-2">
+                    {[
+                      { key: "readingList", label: "My Reading List" },
+                      { key: "favorites", label: "Favorites" },
+                      { key: "thesis", label: "Thesis" },
+                      { key: "journals", label: "Journals" },
+                    ].map((list) => (
+                      <label
+                        key={list.key}
+                        className="flex items-center justify-between cursor-pointer hover:opacity-80 p-2 rounded"
+                        style={{ background: "#f8f1e4" }}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm">📚</span>
+                          <span
+                            className="text-sm"
+                            style={{ color: theme.text }}
+                          >
+                            {list.label}
+                          </span>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={selectedLists[list.key]}
+                          onChange={() => handleToggleList(list.key)}
+                          className="w-4 h-4 cursor-pointer"
+                          style={{ accentColor: theme.accent }}
+                        />
+                      </label>
+                    ))}
+                  </div>
+
+                  {/* Add New List Input */}
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Add new reading list..."
+                      className="flex-1 px-3 py-2 rounded text-sm border"
+                      style={{
+                        background: "#fff",
+                        borderColor: "#d0c4a8",
+                        color: theme.text,
+                      }}
+                    />
+                    <button
+                      className="px-3 py-2 rounded"
+                      style={{ background: theme.accent, color: "white" }}
+                    >
+                      ⊕
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Abstract */}
+            <div>
+              <h2
+                className="text-xl font-serif font-bold mb-3"
+                style={{ color: theme.text }}
+              >
+                Abstract
+              </h2>
+              <p
+                className="text-sm leading-relaxed text-justify"
+                style={{ color: "#6b5446" }}
+                dangerouslySetInnerHTML={{
+                  __html: book.description || "No description available.",
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
