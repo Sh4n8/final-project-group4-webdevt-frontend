@@ -8,25 +8,32 @@ const SignUp = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState("");
   const [credentialExists, setCredentialExists] = useState(false);
 
-  // Check email existence when typing stops
-  const handleEmailChange = (e) => {
+  // Real-time email check
+  const handleEmailChange = async (e) => {
     const newEmail = e.target.value;
     setEmail(newEmail);
     if (newEmail && newEmail.includes("@")) {
-      // Basic email validation
-      if (checkCredentialExists(newEmail)) {
-        setCredentialExists(true);
-        setError(
-          "An account with this email already exists. Please login instead."
-        );
-      } else {
-        setCredentialExists(false);
-        setError("");
-      }
+      const exists = await checkCredentialExists(newEmail);
+      setCredentialExists(exists);
+      setError(
+        exists
+          ? "An account with this email already exists. Please login instead."
+          : ""
+      );
+    }
+  };
+
+  // Real-time username check
+  const handleUsernameChange = async (e) => {
+    const value = e.target.value;
+    setUsername(value);
+    if (value) {
+      const exists = await checkCredentialExists(value);
+      setCredentialExists(exists);
+      setError(exists ? "This username is already taken." : "");
     }
   };
 
@@ -42,8 +49,9 @@ const SignUp = () => {
     }
 
     try {
-      await signup(email, username, password, isAdmin ? "admin" : "user");
-      // signup will navigate via AuthContext on success
+      // Always create as "user" - no admin option
+      await signup(email, username, password, "user");
+      // Navigation handled in AuthContext
     } catch (err) {
       console.error("Signup error", err);
       setError(err?.message || "Signup failed. Please try again.");
@@ -61,6 +69,7 @@ const SignUp = () => {
         </h2>
         {error && <div className="text-red-500 mb-4">{error}</div>}
 
+        {/* Username */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">
             Username
@@ -68,23 +77,14 @@ const SignUp = () => {
           <input
             type="text"
             value={username}
-            onChange={(e) => {
-              const value = e.target.value;
-              setUsername(value);
-              if (value && checkCredentialExists(value)) {
-                setCredentialExists(true);
-                setError("This username is already taken.");
-              } else {
-                setCredentialExists(false);
-                setError("");
-              }
-            }}
+            onChange={handleUsernameChange}
             required
             className="mt-1 block w-full px-3 py-2 border rounded focus:outline-none focus:ring"
             placeholder="Choose a username"
           />
         </div>
 
+        {/* Email */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">
             Email
@@ -99,7 +99,8 @@ const SignUp = () => {
           />
         </div>
 
-        <div className="mb-4">
+        {/* Password */}
+        <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700">
             Password
           </label>
@@ -157,40 +158,20 @@ const SignUp = () => {
           </div>
         </div>
 
-        <div className="mb-6 flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700">
-            Account type:
-          </label>
-          <button
-            type="button"
-            onClick={() => setIsAdmin(false)}
-            className={`px-3 py-1 rounded ${
-              !isAdmin ? "bg-[#7a4b2a] text-white" : "bg-gray-100"
-            }`}
-          >
-            User
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsAdmin(true)}
-            className={`px-3 py-1 rounded ${
-              isAdmin ? "bg-[#7a4b2a] text-white" : "bg-gray-100"
-            }`}
-          >
-            Admin
-          </button>
-        </div>
-
+        {/* Submit */}
         <button
           type="submit"
-          className="w-full bg-[#7a4b2a] text-white py-2 rounded"
+          className="w-full bg-[#7a4b2a] text-white py-2 rounded hover:bg-[#5b331e] transition"
         >
           Create Account
         </button>
 
         <p className="mt-4 text-center text-sm text-gray-700">
           Already have an account?{" "}
-          <Link to="/login" className="text-[#7a4b2a] font-medium">
+          <Link
+            to="/login"
+            className="text-[#7a4b2a] font-medium hover:underline"
+          >
             Sign in
           </Link>
         </p>

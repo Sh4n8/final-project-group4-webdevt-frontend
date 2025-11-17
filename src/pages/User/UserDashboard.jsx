@@ -1,8 +1,9 @@
-// src/pages/User/UserLibrary.jsx
+// src/pages/User/UserDashboard.jsx
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import UserNavBar from "../../components/UserNavBar";
+import { getBooksByCategory } from "../../lib/api";
 
 const theme = {
   bg: "#f8f1e4",
@@ -12,56 +13,68 @@ const theme = {
 };
 
 const BookCard = ({ book, onView }) => {
-  const cover =
-    book.formats["image/jpeg"] ||
-    "https://via.placeholder.com/200x300?text=No+Cover";
-  const author =
-    book.authors && book.authors.length > 0
-      ? book.authors[0].name
-      : "Unknown Author";
+  const authors = Array.isArray(book.authors)
+    ? book.authors.join(", ")
+    : "Unknown Author";
+
+  const thumbnail =
+    book.thumbnail || "https://via.placeholder.com/128x192?text=No+Cover";
 
   return (
     <div
-      className="rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition cursor-pointer"
+      className="rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
       style={{ background: theme.panel }}
-      onClick={() => onView(book.id)}
+      onClick={() => onView(book.googleId)}
     >
-      <img src={cover} alt={book.title} className="w-full h-44 object-cover" />
+      <div className="h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
+        <img
+          src={thumbnail}
+          alt={book.title}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.target.src = "https://via.placeholder.com/128x192?text=No+Cover";
+          }}
+        />
+      </div>
       <div className="p-3">
         <h3
-          className="text-sm font-semibold truncate"
+          className="text-sm font-semibold line-clamp-2"
           style={{ color: theme.text }}
         >
           {book.title}
         </h3>
-        <p className="text-xs mt-1" style={{ color: "#6b5446" }}>
-          {author}
+        <p className="text-xs mt-1 line-clamp-1" style={{ color: "#6b5446" }}>
+          {authors}
         </p>
+        {book.averageRating && (
+          <div className="flex items-center gap-1 mt-1">
+            <span className="text-yellow-600 text-xs">★</span>
+            <span className="text-xs" style={{ color: theme.accent }}>
+              {book.averageRating}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-const Section = ({
-  title,
-  books,
-  loading,
-  onView,
-  showAll,
-  toggleShowAll,
-}) => {
-  const visibleBooks = showAll ? books : books.slice(0, 5);
+const Section = ({ title, books, loading, onView, showAll, toggleShowAll }) => {
+  const visibleBooks = showAll ? books : books.slice(0, 6);
 
   return (
     <div className="mb-10">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-serif" style={{ color: theme.text }}>
+        <h2
+          className="text-xl font-serif font-bold"
+          style={{ color: theme.text }}
+        >
           {title}
         </h2>
-        {books.length > 5 && (
+        {books.length > 6 && (
           <button
             onClick={toggleShowAll}
-            className="text-sm font-medium underline hover:text-brown-700"
+            className="text-sm font-medium underline hover:opacity-80"
             style={{ color: theme.accent }}
           >
             {showAll ? "Show Less" : "View All"}
@@ -70,109 +83,125 @@ const Section = ({
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="h-44 rounded-lg animate-pulse"
+              className="h-64 rounded-lg animate-pulse"
               style={{ background: "#eadfc6" }}
             ></div>
           ))}
         </div>
       ) : books.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {visibleBooks.map((b) => (
-            <BookCard key={b.id} book={b} onView={onView} />
+            <BookCard key={b.googleId} book={b} onView={onView} />
           ))}
         </div>
       ) : (
         <p className="text-sm" style={{ color: "#6b5446" }}>
-          No results.
+          No results found.
         </p>
       )}
     </div>
   );
 };
 
-const UserLibrary = () => {
+const UserDashboard = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const [trending, setTrending] = useState([]);
-  const [journals, setJournals] = useState([]);
-  const [academic, setAcademic] = useState([]);
-  const [digital, setDigital] = useState([]);
+  const [mathematics, setMathematics] = useState([]);
+  const [programming, setProgramming] = useState([]);
+  const [physics, setPhysics] = useState([]);
+  const [engineering, setEngineering] = useState([]);
 
-  const [loadingTrending, setLoadingTrending] = useState(true);
-  const [loadingJournals, setLoadingJournals] = useState(true);
-  const [loadingAcademic, setLoadingAcademic] = useState(true);
-  const [loadingDigital, setLoadingDigital] = useState(true);
+  const [loadingMath, setLoadingMath] = useState(true);
+  const [loadingProg, setLoadingProg] = useState(true);
+  const [loadingPhys, setLoadingPhys] = useState(true);
+  const [loadingEng, setLoadingEng] = useState(true);
 
-  const [showAllTrending, setShowAllTrending] = useState(false);
-  const [showAllJournals, setShowAllJournals] = useState(false);
-  const [showAllAcademic, setShowAllAcademic] = useState(false);
-  const [showAllDigital, setShowAllDigital] = useState(false);
+  const [showAllMath, setShowAllMath] = useState(false);
+  const [showAllProg, setShowAllProg] = useState(false);
+  const [showAllPhys, setShowAllPhys] = useState(false);
+  const [showAllEng, setShowAllEng] = useState(false);
 
   useEffect(() => {
-    const fetchBooks = async (query, setter, loaderSetter) => {
+    const fetchCategoryBooks = async (category, setter, loaderSetter) => {
       loaderSetter(true);
       try {
-        const res = await fetch(
-          `https://gutendex.com/books/?search=${encodeURIComponent(
-            query
-          )}&mime_type=text&languages=en&page=1`
-        );
-        const data = await res.json();
-        setter(data.results || []);
+        const res = await getBooksByCategory(category, 20);
+        setter(res.data.books || []);
       } catch (err) {
-        console.error(`${query} fetch error:`, err);
+        console.error(`${category} fetch error:`, err);
+        setter([]);
       } finally {
         loaderSetter(false);
       }
     };
 
-    fetchBooks("fiction", setTrending, setLoadingTrending); // Trending
-    fetchBooks("education", setJournals, setLoadingJournals); // E-Resources & Journals
-    fetchBooks("academic", setAcademic, setLoadingAcademic); // Academic References
+    // Fetch books for each educational category
+    fetchCategoryBooks("mathematics", setMathematics, setLoadingMath);
+    fetchCategoryBooks("programming", setProgramming, setLoadingProg);
+    fetchCategoryBooks("physics", setPhysics, setLoadingPhys);
+    fetchCategoryBooks("engineering", setEngineering, setLoadingEng);
   }, []);
 
-  const handleView = (id) => {
-    navigate(`/dashboard/book/${id}`);
+  const handleView = (googleId) => {
+    navigate(`/dashboard/book/${googleId}`);
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text }}>
+    <div
+      style={{ minHeight: "100vh", background: theme.bg, color: theme.text }}
+    >
       <UserNavBar />
       <div className="container mx-auto px-6 py-8">
+        <h1
+          className="text-3xl font-serif font-bold mb-8"
+          style={{ color: theme.text }}
+        >
+          Educational Library
+        </h1>
+
         <Section
-          title="Trending"
-          books={trending}
-          loading={loadingTrending}
+          title="Mathematics"
+          books={mathematics}
+          loading={loadingMath}
           onView={handleView}
-          showAll={showAllTrending}
-          toggleShowAll={() => setShowAllTrending(!showAllTrending)}
+          showAll={showAllMath}
+          toggleShowAll={() => setShowAllMath(!showAllMath)}
         />
 
         <Section
-          title="E-Resources & Journals"
-          books={journals}
-          loading={loadingJournals}
+          title="Programming & Computer Science"
+          books={programming}
+          loading={loadingProg}
           onView={handleView}
-          showAll={showAllJournals}
-          toggleShowAll={() => setShowAllJournals(!showAllJournals)}
+          showAll={showAllProg}
+          toggleShowAll={() => setShowAllProg(!showAllProg)}
         />
 
         <Section
-          title="Academic References"
-          books={academic}
-          loading={loadingAcademic}
+          title="Physics"
+          books={physics}
+          loading={loadingPhys}
           onView={handleView}
-          showAll={showAllAcademic}
-          toggleShowAll={() => setShowAllAcademic(!showAllAcademic)}
+          showAll={showAllPhys}
+          toggleShowAll={() => setShowAllPhys(!showAllPhys)}
+        />
+
+        <Section
+          title="Engineering"
+          books={engineering}
+          loading={loadingEng}
+          onView={handleView}
+          showAll={showAllEng}
+          toggleShowAll={() => setShowAllEng(!showAllEng)}
         />
       </div>
     </div>
   );
 };
 
-export default UserLibrary;
+export default UserDashboard;
