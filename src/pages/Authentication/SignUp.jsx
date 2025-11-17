@@ -8,7 +8,6 @@ const SignUp = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [error, setError] = useState("");
   const [credentialExists, setCredentialExists] = useState(false);
 
@@ -50,7 +49,8 @@ const SignUp = () => {
     }
 
     try {
-      await signup(email, username, password, isAdmin ? "admin" : "user");
+      // Always create as "user" - no admin option
+      await signup(email, username, password, "user");
       // Navigation handled in AuthContext
     } catch (err) {
       console.error("Signup error", err);
@@ -100,7 +100,7 @@ const SignUp = () => {
         </div>
 
         {/* Password */}
-        <div className="mb-4">
+        <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700">
             Password
           </label>
@@ -158,42 +158,20 @@ const SignUp = () => {
           </div>
         </div>
 
-        {/* Account Type */}
-        <div className="mb-6 flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700">
-            Account type:
-          </label>
-          <button
-            type="button"
-            onClick={() => setIsAdmin(false)}
-            className={`px-3 py-1 rounded ${
-              !isAdmin ? "bg-[#7a4b2a] text-white" : "bg-gray-100"
-            }`}
-          >
-            User
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsAdmin(true)}
-            className={`px-3 py-1 rounded ${
-              isAdmin ? "bg-[#7a4b2a] text-white" : "bg-gray-100"
-            }`}
-          >
-            Admin
-          </button>
-        </div>
-
         {/* Submit */}
         <button
           type="submit"
-          className="w-full bg-[#7a4b2a] text-white py-2 rounded"
+          className="w-full bg-[#7a4b2a] text-white py-2 rounded hover:bg-[#5b331e] transition"
         >
           Create Account
         </button>
 
         <p className="mt-4 text-center text-sm text-gray-700">
           Already have an account?{" "}
-          <Link to="/login" className="text-[#7a4b2a] font-medium">
+          <Link
+            to="/login"
+            className="text-[#7a4b2a] font-medium hover:underline"
+          >
             Sign in
           </Link>
         </p>
