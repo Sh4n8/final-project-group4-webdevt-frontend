@@ -1,14 +1,7 @@
-<<<<<<< .merge_file_pvzumB
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import UserNavbar from "../../components/UserNavBar.jsx";
-=======
-// src/pages/User/BookView.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getBookById } from "../../lib/api";
 import UserNavBar from "../../components/UserNavBar";
->>>>>>> .merge_file_yMTQ2V
 
 const theme = {
   bg: "#f8f1e4",
@@ -60,7 +53,6 @@ const BookView = () => {
   };
 
   const handleDone = () => {
-    // Save to localStorage for now
     const bookData = {
       googleId: book.googleId,
       title: book.title,
@@ -73,7 +65,6 @@ const BookView = () => {
       if (selectedLists[listName]) {
         const currentList = JSON.parse(localStorage.getItem(listName) || "[]");
 
-        // Check if book already exists
         const exists = currentList.some((b) => b.googleId === book.googleId);
 
         if (!exists) {
@@ -138,7 +129,6 @@ const BookView = () => {
       <UserNavBar />
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left: Book Cover */}
           <div className="lg:col-span-1">
             <div
               className="rounded-lg overflow-hidden shadow-lg"
@@ -156,7 +146,6 @@ const BookView = () => {
             </div>
           </div>
 
-          {/* Right: Book Info */}
           <div className="lg:col-span-2">
             <h1
               className="text-3xl font-serif font-bold mb-2"
@@ -168,7 +157,6 @@ const BookView = () => {
               {book.subtitle || `By ${authors}`}
             </p>
 
-            {/* Book Stats */}
             <div className="flex flex-wrap gap-4 mb-6">
               <div className="flex items-center gap-2">
                 <span
@@ -181,6 +169,7 @@ const BookView = () => {
                   {pageCount}
                 </span>
               </div>
+
               <div className="flex items-center gap-2">
                 <span
                   className="text-sm font-medium"
@@ -192,6 +181,7 @@ const BookView = () => {
                   {publishedDate}
                 </span>
               </div>
+
               {book.publisher && (
                 <div className="flex items-center gap-2">
                   <span
@@ -205,6 +195,7 @@ const BookView = () => {
                   </span>
                 </div>
               )}
+
               {book.averageRating && (
                 <div className="flex items-center gap-2">
                   <span
@@ -220,7 +211,6 @@ const BookView = () => {
               )}
             </div>
 
-            {/* Categories */}
             <div className="mb-6">
               <span
                 className="text-sm font-medium"
@@ -233,19 +223,16 @@ const BookView = () => {
               </p>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-3 mb-8 relative">
               <button
                 className="px-6 py-3 rounded-lg text-white font-medium hover:opacity-90 transition"
                 style={{ background: theme.accent }}
                 onClick={() => {
-                  // Try multiple preview options
                   if (book.previewLink) {
                     window.open(book.previewLink, "_blank");
                   } else if (book.infoLink) {
                     window.open(book.infoLink, "_blank");
                   } else if (book.googleId) {
-                    // Fallback: construct Google Books URL directly
                     window.open(
                       `https://books.google.com/books?id=${book.googleId}`,
                       "_blank"
@@ -257,6 +244,7 @@ const BookView = () => {
               >
                 Start Reading
               </button>
+
               <button
                 className="px-6 py-3 rounded-lg font-medium border-2 hover:opacity-90 transition relative"
                 style={{
@@ -269,7 +257,6 @@ const BookView = () => {
                 Add to +
               </button>
 
-              {/* Add to Menu Dropdown */}
               {showAddMenu && (
                 <div
                   className="absolute top-full mt-2 right-0 rounded-lg shadow-lg p-4 z-10 w-64"
@@ -288,7 +275,6 @@ const BookView = () => {
                     </button>
                   </div>
 
-                  {/* List Options */}
                   <div className="space-y-2">
                     {[
                       { key: "readingList", label: "My Reading List" },
@@ -321,7 +307,6 @@ const BookView = () => {
                     ))}
                   </div>
 
-                  {/* Add New List Input */}
                   <div className="mt-3 flex gap-2">
                     <input
                       type="text"
@@ -344,7 +329,6 @@ const BookView = () => {
               )}
             </div>
 
-            {/* Abstract */}
             <div>
               <h2
                 className="text-xl font-serif font-bold mb-3"
