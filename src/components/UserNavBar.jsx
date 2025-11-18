@@ -6,149 +6,49 @@ const UserNavBar = () => {
   const { user, logout } = useContext(AuthContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("explore");
 
-  // ← NEW: use the name you entered on Sign-Up
   const displayName = user?.name || "Username";
   const avatarLetter = displayName.charAt(0).toUpperCase();
 
-  const categories = [
-    "Dynamic Categories",
-    "Academic & Reference",
-    "Arts & Literature",
-    "Self-Development & Lifestyle",
-    "Science & Technology",
-    "Languages & Communication",
-    "Digital Resources",
-  ];
-
   return (
     <nav className="bg-[#F5E6D3] border-b border-[#D4B896]">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo Section */}
-          <div className="flex items-center gap-3">
-            <div className="bg-[#8B7355] p-2.5 rounded">
-              <svg
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                />
-              </svg>
-            </div>
+      <div className="max-w-full px-6">
+        <div className="flex items-center h-16">
+          {/* Logo Section - Left Side */}
+          <Link to="/dashboard" className="flex items-center gap-1 flex-shrink-0 cursor-pointer">
+
+            <img 
+              src="/logo-library.png" 
+              alt="LibroLink Logo" 
+              className="w-24 h-24 rounded"
+            />
             <div>
               <h1 className="text-xl font-bold text-[#5D4E37]">LibroLink</h1>
               <p className="text-xs text-[#8B7355]">
                 Library Management System
               </p>
             </div>
-          </div>
+          </Link>
 
-          {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center gap-6">
+          {/* Desktop Navigation Links - Left Side */}
+          <div className="hidden md:flex items-center gap-6 ml-12">
             <Link
               to="/dashboard"
-              onClick={() => setActiveTab("explore")}
-              className={`px-4 py-2 rounded-full font-medium transition-colors ${
-                activeTab === "explore"
-                  ? "bg-[#8B7355] text-white"
-                  : "text-[#5D4E37] hover:text-[#8B7355]"
-              }`}
+              className="px-4 py-2 rounded-full font-medium transition-colors text-[#5D4E37] hover:bg-[#8B7355] hover:text-white"
             >
               Explore
             </Link>
 
-            {/* Category Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => {
-                  setIsCategoryOpen(!isCategoryOpen);
-                  setActiveTab("category");
-                }}
-                className={`flex items-center gap-1 px-4 py-2 rounded-full font-medium transition-colors ${
-                  activeTab === "category" || isCategoryOpen
-                    ? "bg-[#8B7355] text-white"
-                    : "text-[#5D4E37] hover:text-[#8B7355]"
-                }`}
-              >
-                Category
-                <svg
-                  className={`w-4 h-4 transition-transform ${
-                    isCategoryOpen ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
-
-              {isCategoryOpen && (
-                <div className="absolute left-0 mt-2 w-64 bg-white rounded-lg shadow-lg py-3 z-50">
-                  {categories.map((cat, i) => (
-                    <a
-                      key={i}
-                      href={`#${cat.toLowerCase().replace(/\s+/g, "-")}`}
-                      className="block px-4 py-2 text-[#5D4E37] hover:bg-[#F5E6D3] transition-colors"
-                    >
-                      {cat}
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
-
             <Link
               to="/library"
-              onClick={() => setActiveTab("my-library")}
-              className={`px-4 py-2 rounded-full font-medium transition-colors ${
-                activeTab === "my-library"
-                  ? "bg-[#8B7355] text-white"
-                  : "text-[#5D4E37] hover:text-[#8B7355]"
-              }`}
+              className="px-4 py-2 rounded-full font-medium transition-colors text-[#5D4E37] hover:bg-[#8B7355] hover:text-white"
             >
               My Library
             </Link>
-
-            {/* Search Bar */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search"
-                className="pl-10 pr-4 py-2 w-64 !bg-white border border-[#D4B896] rounded-full text-sm focus:outline-none focus:border-[#8B7355] !text-[#5D4E37] placeholder-[#8B7355]"
-              />
-              <svg
-                className="w-5 h-5 text-[#8B7355] absolute left-3 top-1/2 transform -translate-y-1/2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
           </div>
 
-          {/* User Profile Section */}
-          <div className="hidden md:flex items-center gap-4">
+          {/* User Profile Section - Right Side */}
+          <div className="hidden md:flex items-center gap-4 flex-shrink-0 ml-auto">
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -157,7 +57,6 @@ const UserNavBar = () => {
                 <div className="w-9 h-9 bg-[#8B7355] rounded-full flex items-center justify-center text-white font-semibold">
                   {avatarLetter}
                 </div>
-                {/* ← DISPLAY NAME */}
                 <span>{displayName}</span>
                 <svg
                   className={`w-4 h-4 transition-transform ${
@@ -256,32 +155,27 @@ const UserNavBar = () => {
                 <div className="w-9 h-9 bg-[#8B7355] rounded-full flex items-center justify-center text-white font-semibold">
                   {avatarLetter}
                 </div>
-                {/* ← DISPLAY NAME (mobile) */}
                 <span className="text-[#5D4E37] font-medium">
                   {displayName}
                 </span>
               </div>
 
               <div className="px-4">
-                <input
-                  type="text"
-                  placeholder="Search"
-                  className="w-full pl-10 pr-4 py-2 !bg-white border border-[#D4B896] rounded-full text-sm focus:outline-none focus:border-[#8B7355] !text-[#5D4E37] placeholder-[#8B7355]"
-                />
+                <Link
+                  to="/dashboard"
+                  className="text-[#5D4E37] hover:text-[#8B7355] font-medium transition-colors"
+                >
+                  Explore
+                </Link>
               </div>
-
-              <Link
-                to="/dashboard"
-                className="text-[#5D4E37] hover:text-[#8B7355] font-medium transition-colors px-4"
-              >
-                Explore
-              </Link>
-              <Link
-                to="/library"
-                className="text-[#5D4E37] hover:text-[#8B7355] font-medium transition-colors px-4"
-              >
-                My Library
-              </Link>
+              <div className="px-4">
+                <Link
+                  to="/library"
+                  className="text-[#5D4E37] hover:text-[#8B7355] font-medium transition-colors"
+                >
+                  My Library
+                </Link>
+              </div>
               <div className="border-t border-[#D4B896] my-2"></div>
               <a
                 href="#profile"
