@@ -1,4 +1,5 @@
 import React, {useState} from "react";
+
 export default function AdminReports() {
   const [timeframe, setTimeframe] = useState("monthly");
 
@@ -26,11 +27,7 @@ export default function AdminReports() {
     ],
   };
 
-  const [activities] = useState([
-    { id: 1, action: "User John Doe visited the website", date: "2025-10-28" },
-    { id: 2, action: "New category 'Philosophy' added", date: "2025-10-27" },
-    { id: 3, action: "User Jane Smith registered", date: "2025-10-25" },
-  ]);
+  
 
   const renderTable = (data) => (
     <table className="w-full border border-[#EAD7BE] mt-4 text-[#5D4E37]">
@@ -73,17 +70,8 @@ export default function AdminReports() {
         {renderTable(dataSets[timeframe])}
       </div>
 
-      <div className="bg-white p-6 rounded-xl shadow-md">
-        <h2 className="text-xl font-semibold text-[#5D4E37] mb-4">Recent Activities</h2>
-        <ul className="divide-y divide-[#EAD7BE]">
-          {activities.map((activity) => (
-            <li key={activity.id} className="py-2">
-              <p className="text-[#5D4E37]">{activity.action}</p>
-              <span className="text-sm text-gray-500">{activity.date}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      
     </div>
   );
 }
+

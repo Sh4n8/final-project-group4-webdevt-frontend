@@ -7,7 +7,6 @@ export default function AdminDashboard() {
   const { user } = useContext(AuthContext);
   const location = useLocation();
 
-  
   const isDashboard =
     location.pathname === "/admin" || location.pathname === "/admin/dashboard";
 
@@ -26,10 +25,12 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#F5E6D3]">
-      <AdminNavBar />
+    <div className="flex bg-[#F5E6D3]">
+      <div className="h-screen w-64 fixed top-0 left-0">
+        <AdminNavBar />
+      </div>
 
-      <div className="flex-1 p-8">
+      <div className="flex-1 ml-64 p-8 overflow-y-auto min-h-screen">
         {isDashboard ? (
           <div>
             <h1 className="text-2xl font-bold text-[#5D4E37]">Admin Dashboard</h1>
@@ -39,7 +40,10 @@ export default function AdminDashboard() {
 
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {stats.map((item, index) => (
-                <div key={index} className="bg-white p-6 rounded-xl shadow text-center text-[#5D4E37]">
+                <div
+                  key={index}
+                  className="bg-white p-6 rounded-xl shadow text-center text-[#5D4E37]"
+                >
                   <h2 className="text-3xl font-bold">{item.count}</h2>
                   <p className="mt-1 text-sm">{item.title}</p>
                 </div>
@@ -47,7 +51,9 @@ export default function AdminDashboard() {
             </div>
 
             <div className="mt-10">
-              <h2 className="text-xl font-semibold text-[#5D4E37] mb-2">Recent Activities</h2>
+              <h2 className="text-xl font-semibold text-[#5D4E37] mb-2">
+                Recent Activities
+              </h2>
               <ul className="bg-white rounded-xl p-4 space-y-2 text-[#5D4E37]">
                 {activities.map((activity, index) => (
                   <li key={index} className="border-b last:border-none py-2">
