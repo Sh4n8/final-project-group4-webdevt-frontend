@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getBookById } from "../../lib/api";
-import { getDemoBookById } from "../../data/demoBooks";
+import { getDemoBookById } from "../../data/bookHelpers";
 import UserNavBar from "../../components/UserNavBar";
 
 const theme = {

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import UserNavBar from "../../components/UserNavBar";
 import { getBooksByCategory } from "../../lib/api";
-import { demoBooks } from "../../data/demoBooks";
+import { demoBooks } from "../../data/bookHelpers";
 
 const theme = {
   bg: "#f8f1e4",
