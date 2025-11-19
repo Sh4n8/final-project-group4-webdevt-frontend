@@ -26,12 +26,7 @@ const AdminNavBar = () => {
       name: "Categories",
       icon: <FolderOpen size={20} />,
       path: "/admin/categories",
-    },
-    {
-      name: "Reports",
-      icon: <FileBarChart size={20} />,
-      path: "/admin/reports",
-    },
+    }
   ];
 
   return (
