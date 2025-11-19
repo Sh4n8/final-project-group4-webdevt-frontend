@@ -45,7 +45,7 @@ function App() {
             <Route path="reports" element={<AdminReports />} />
           </Route>
 
-          {/* User Routes */}
+          {/* User Protected Routes */}
           <Route
             path="/dashboard"
             element={
@@ -87,7 +87,7 @@ function App() {
             }
           />
 
-          {/* Book and Reader Routes */}
+          {/* Book View Route */}
           <Route
             path="/dashboard/book/:bookId"
             element={
@@ -96,14 +96,9 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route
-            path="/reader/:bookId"
-            element={
-              <PrivateRoute>
-                <Reader />
-              </PrivateRoute>
-            }
-          />
+
+          {/* REMOVED: Reader route - component was deleted */}
+          {/* If you add a new reader later, just put it back here */}
         </Routes>
       </AuthProvider>
     </Router>
