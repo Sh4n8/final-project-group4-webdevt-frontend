@@ -1,11 +1,10 @@
-// src/lib/api.js
 import axios from "axios";
 
 const isDev = import.meta.env.DEV;
 const apiUrl = isDev
-  ? "/api" 
+  ? "/api"
   : import.meta.env.VITE_API_URL ||
-    "https://final-project-group4-webdev-backend-production.up.railway.app"; 
+    "https://final-project-group4-webdev-backend-production.up.railway.app";
 
 const api = axios.create({
   baseURL: apiUrl,
@@ -36,14 +35,14 @@ export const setAuthToken = (token) => {
 export const removeAuthToken = () =>
   delete api.defaults.headers.common["Authorization"];
 
-// User API calls (no extra /api prefix!)
-export const registerUser = (data) => api.post("/users/register", data);
-export const loginUser = (data) => api.post("/users/login", data);
-export const getProfile = () => api.get("/users/profile");
+// ✅ Updated User API calls with /api prefix
+export const registerUser = (data) => api.post("/api/users/register", data);
+export const loginUser = (data) => api.post("/api/users/login", data);
+export const getProfile = () => api.get("/api/users/profile");
 export const checkCredential = (c) =>
-  api.get("/users/check-credential", { params: { credential: c } });
+  api.get("/api/users/check-credential", { params: { credential: c } });
 
-// Book API calls
+// Book API calls (unchanged)
 export const searchBooks = (query, maxResults = 20) =>
   api.get("/books/search", { params: { query, maxResults } });
 
