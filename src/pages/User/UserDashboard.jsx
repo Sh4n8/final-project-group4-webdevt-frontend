@@ -166,17 +166,13 @@ const UserDashboard = () => {
   useEffect(() => {
     // FIXED: Load categories SEQUENTIALLY with delays to avoid rate limiting
     const fetchAllCategories = async () => {
+      // Load only 5 most popular categories to avoid rate limiting
       const categoriesToFetch = [
         { name: "mathematics", setter: setMathematics, loader: setLoadingMath },
         { name: "programming", setter: setProgramming, loader: setLoadingProg },
         { name: "physics", setter: setPhysics, loader: setLoadingPhys },
         { name: "engineering", setter: setEngineering, loader: setLoadingEng },
-        { name: "chemistry", setter: setChemistry, loader: setLoadingChem },
         { name: "biology", setter: setBiology, loader: setLoadingBio },
-        { name: "medicine", setter: setMedicine, loader: setLoadingMed },
-        { name: "history", setter: setHistory, loader: setLoadingHist },
-        { name: "economics", setter: setEconomics, loader: setLoadingEcon },
-        { name: "psychology", setter: setPsychology, loader: setLoadingPsych },
       ];
 
       // Load each category one at a time with 800ms delay
@@ -192,6 +188,7 @@ const UserDashboard = () => {
           category.loader(false);
         }
 
+        // Wait 2000ms (2 seconds) before next request to avoid rate limiting
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     };
