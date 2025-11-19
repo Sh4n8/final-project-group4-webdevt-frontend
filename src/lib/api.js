@@ -3,7 +3,7 @@ import axios from "axios";
 
 const isDev = import.meta.env.DEV;
 const baseURL = isDev
-  ? "/api"  // ← Vite proxy will forward this to localhost:5000/api
+  ? "/api"
   : import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const api = axios.create({
@@ -31,18 +31,15 @@ export const setAuthToken = (token) => {
   if (token) api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   else delete api.defaults.headers.common["Authorization"];
 };
-
 export const removeAuthToken = () =>
   delete api.defaults.headers.common["Authorization"];
 
-// FIXED: Removed the extra "/api" prefix from all endpoints
 export const registerUser = (data) => api.post("/users/register", data);
 export const loginUser = (data) => api.post("/users/login", data);
 export const getProfile = () => api.get("/users/profile");
 export const checkCredential = (c) =>
   api.get("/users/check-credential", { params: { credential: c } });
 
-// Book endpoints - also fixed
 export const searchBooks = (query, maxResults = 20) =>
   api.get("/books/search", { params: { query, maxResults } });
 

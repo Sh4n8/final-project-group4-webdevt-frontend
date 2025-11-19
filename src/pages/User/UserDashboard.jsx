@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import UserNavBar from "../../components/UserNavBar";
-import { demoBooks } from "../../data/bookHelpers";
+import { getBooksByCategory } from "../../lib/api";
 
 const theme = {
   bg: "#f8f1e4",
@@ -12,82 +12,133 @@ const theme = {
   accent: "#7b4b26",
 };
 
+// 📌 Improved BookCard (FULL cover display + nicer UI)
 const BookCard = ({ book, onView }) => {
   const authors = Array.isArray(book.authors)
     ? book.authors.join(", ")
     : "Unknown Author";
+
   const thumbnail =
-    book.thumbnail || "https://via.placeholder.com/128x192?text=No+Cover";
+    book.thumbnail || "https://via.placeholder.com/300x450?text=No+Cover";
+
   return (
     <div
-      className="rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
+      className="rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col"
       style={{ background: theme.panel }}
       onClick={() => onView(book.googleId)}
     >
-      <div className="h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
+      {/* FIXED: Full image cover display */}
+      <div className="w-full h-56 bg-white flex items-center justify-center overflow-hidden">
         <img
           src={thumbnail}
           alt={book.title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
           onError={(e) => {
-            e.target.src = "https://via.placeholder.com/128x192?text=No+Cover";
+            e.target.src = "https://via.placeholder.com/300x450?text=No+Cover";
           }}
         />
       </div>
-      <div className="p-3">
+
+      {/* Card Details */}
+      <div className="p-3 flex flex-col flex-1">
+        {/* FIXED: Multi-line title */}
         <h3
-          className="text-sm font-semibold line-clamp-2"
-          style={{ color: theme.text }}
+          className="font-semibold text-sm leading-tight line-clamp-2"
+          style={{
+            color: theme.text,
+            fontFamily: "'Arial', 'Helvetica', sans-serif",
+          }}
         >
           {book.title}
         </h3>
-        <p className="text-xs mt-1 line-clamp-1" style={{ color: "#6b5446" }}>
+
+        {/* FIXED: Multi-line authors */}
+        <p
+          className="text-xs mt-1 leading-tight line-clamp-2"
+          style={{
+            color: "#6b5446",
+            fontFamily: "'Arial', 'Helvetica', sans-serif",
+          }}
+        >
           {authors}
         </p>
+
+        {book.averageRating && (
+          <div className="flex items-center gap-1 mt-2">
+            <span className="text-yellow-600 text-xs">★</span>
+            <span
+              className="text-xs"
+              style={{
+                color: theme.accent,
+                fontFamily: "'Arial', 'Helvetica', sans-serif",
+              }}
+            >
+              {book.averageRating}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
+// 📌 Updated Section Component (cleaner spacing + alignment)
 const Section = ({ title, books, loading, onView, showAll, toggleShowAll }) => {
   const visibleBooks = showAll ? books : books.slice(0, 6);
+
   return (
-    <div className="mb-10">
+    <div className="mb-12">
+      {/* Title Row */}
       <div className="flex items-center justify-between mb-4">
         <h2
-          className="text-xl font-serif font-bold"
-          style={{ color: theme.text }}
+          className="text-2xl font-bold"
+          style={{
+            color: theme.text,
+            fontFamily: "'Arial', 'Helvetica', sans-serif",
+          }}
         >
           {title}
         </h2>
+
         {books.length > 6 && (
           <button
             onClick={toggleShowAll}
             className="text-sm font-medium underline hover:opacity-80"
-            style={{ color: theme.accent }}
+            style={{
+              color: theme.accent,
+              fontFamily: "'Arial', 'Helvetica', sans-serif",
+            }}
           >
             {showAll ? "Show Less" : "View All"}
           </button>
         )}
       </div>
+
+      {/* Book grid */}
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="h-64 rounded-lg animate-pulse"
+              className="h-64 rounded-xl animate-pulse"
               style={{ background: "#eadfc6" }}
             ></div>
           ))}
         </div>
       ) : books.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-5">
           {visibleBooks.map((b) => (
             <BookCard key={b.googleId} book={b} onView={onView} />
           ))}
         </div>
       ) : (
-        <p className="text-sm" style={{ color: "#6b5446" }}>
+        <p
+          className="text-sm mt-2"
+          style={{
+            color: "#6b5446",
+            fontFamily: "'Arial', 'Helvetica', sans-serif",
+          }}
+        >
           No results found.
         </p>
       )}
@@ -99,31 +150,48 @@ const UserDashboard = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  // States
   const [mathematics, setMathematics] = useState([]);
   const [programming, setProgramming] = useState([]);
   const [physics, setPhysics] = useState([]);
   const [engineering, setEngineering] = useState([]);
+  const [chemistry, setChemistry] = useState([]);
   const [biology, setBiology] = useState([]);
+  const [medicine, setMedicine] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [economics, setEconomics] = useState([]);
+  const [psychology, setPsychology] = useState([]);
 
   const [loadingMath, setLoadingMath] = useState(true);
   const [loadingProg, setLoadingProg] = useState(true);
   const [loadingPhys, setLoadingPhys] = useState(true);
   const [loadingEng, setLoadingEng] = useState(true);
+  const [loadingChem, setLoadingChem] = useState(true);
   const [loadingBio, setLoadingBio] = useState(true);
+  const [loadingMed, setLoadingMed] = useState(true);
+  const [loadingHist, setLoadingHist] = useState(true);
+  const [loadingEcon, setLoadingEcon] = useState(true);
+  const [loadingPsych, setLoadingPsych] = useState(true);
 
   const [showAllMath, setShowAllMath] = useState(false);
   const [showAllProg, setShowAllProg] = useState(false);
   const [showAllPhys, setShowAllPhys] = useState(false);
   const [showAllEng, setShowAllEng] = useState(false);
+  const [showAllChem, setShowAllChem] = useState(false);
   const [showAllBio, setShowAllBio] = useState(false);
+  const [showAllMed, setShowAllMed] = useState(false);
+  const [showAllHist, setShowAllHist] = useState(false);
+  const [showAllEcon, setShowAllEcon] = useState(false);
+  const [showAllPsych, setShowAllPsych] = useState(false);
 
-  // Search and filter states - restore from sessionStorage on mount
   const [searchQuery, setSearchQuery] = useState(() => {
     return sessionStorage.getItem("dashboardSearch") || "";
   });
+
   const [selectedCategory, setSelectedCategory] = useState(() => {
     return sessionStorage.getItem("dashboardCategory") || "all";
   });
+
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
 
   const categories = [
@@ -132,100 +200,133 @@ const UserDashboard = () => {
     { value: "programming", label: "Programming & Computer Science" },
     { value: "physics", label: "Physics" },
     { value: "engineering", label: "Engineering" },
+    { value: "chemistry", label: "Chemistry" },
     { value: "biology", label: "Biology" },
+    { value: "medicine", label: "Medicine" },
+    { value: "history", label: "History" },
+    { value: "economics", label: "Economics" },
+    { value: "psychology", label: "Psychology" },
   ];
 
   useEffect(() => {
-    // Use demo books instead of API to avoid rate limiting
-    setMathematics(demoBooks.mathematics || []);
-    setLoadingMath(false);
+    const fetchCategoryBooks = async (category, setter, loaderSetter) => {
+      loaderSetter(true);
+      try {
+        const res = await getBooksByCategory(category, 20);
+        setter(res.data.books || []);
+      } catch (err) {
+        console.error(`${category} fetch error:`, err);
+        setter([]);
+      } finally {
+        loaderSetter(false);
+      }
+    };
 
-    setProgramming(demoBooks.programming || []);
-    setLoadingProg(false);
-
-    setPhysics(demoBooks.physics || []);
-    setLoadingPhys(false);
-
-    setEngineering(demoBooks.engineering || []);
-    setLoadingEng(false);
-
-    setBiology(demoBooks.biology || []);
-    setLoadingBio(false);
+    fetchCategoryBooks("mathematics", setMathematics, setLoadingMath);
+    fetchCategoryBooks("programming", setProgramming, setLoadingProg);
+    fetchCategoryBooks("physics", setPhysics, setLoadingPhys);
+    fetchCategoryBooks("engineering", setEngineering, setLoadingEng);
+    fetchCategoryBooks("chemistry", setChemistry, setLoadingChem);
+    fetchCategoryBooks("biology", setBiology, setLoadingBio);
+    fetchCategoryBooks("medicine", setMedicine, setLoadingMed);
+    fetchCategoryBooks("history", setHistory, setLoadingHist);
+    fetchCategoryBooks("economics", setEconomics, setLoadingEcon);
+    fetchCategoryBooks("psychology", setPsychology, setLoadingPsych);
   }, []);
 
   const handleView = (googleId) => {
-    // Save current state before navigating
     sessionStorage.setItem("dashboardCategory", selectedCategory);
     sessionStorage.setItem("dashboardSearch", searchQuery);
     navigate(`/dashboard/book/${googleId}`);
   };
 
-  // Filter books based on search query
   const filterBooks = (books) => {
     if (!searchQuery) return books;
+    const q = searchQuery.toLowerCase();
     return books.filter((book) => {
       const title = book.title?.toLowerCase() || "";
       const authors = Array.isArray(book.authors)
         ? book.authors.join(" ").toLowerCase()
         : "";
-      const query = searchQuery.toLowerCase();
-      return title.includes(query) || authors.includes(query);
+      return title.includes(q) || authors.includes(q);
     });
   };
 
-  // Get filtered sections based on category selection
   const getVisibleSections = () => {
     const sections = [];
 
-    if (selectedCategory === "all" || selectedCategory === "mathematics") {
-      sections.push({
-        title: "Mathematics",
-        books: filterBooks(mathematics),
-        loading: loadingMath,
-        showAll: showAllMath,
-        toggleShowAll: () => setShowAllMath(!showAllMath),
-      });
-    }
+    const pushSection = (value, title, books, loading, showAll, toggle) => {
+      if (selectedCategory === "all" || selectedCategory === value) {
+        sections.push({
+          title,
+          books: filterBooks(books),
+          loading,
+          showAll,
+          toggleShowAll: toggle,
+        });
+      }
+    };
 
-    if (selectedCategory === "all" || selectedCategory === "programming") {
-      sections.push({
-        title: "Programming & Computer Science",
-        books: filterBooks(programming),
-        loading: loadingProg,
-        showAll: showAllProg,
-        toggleShowAll: () => setShowAllProg(!showAllProg),
-      });
-    }
-
-    if (selectedCategory === "all" || selectedCategory === "physics") {
-      sections.push({
-        title: "Physics",
-        books: filterBooks(physics),
-        loading: loadingPhys,
-        showAll: showAllPhys,
-        toggleShowAll: () => setShowAllPhys(!showAllPhys),
-      });
-    }
-
-    if (selectedCategory === "all" || selectedCategory === "engineering") {
-      sections.push({
-        title: "Engineering",
-        books: filterBooks(engineering),
-        loading: loadingEng,
-        showAll: showAllEng,
-        toggleShowAll: () => setShowAllEng(!showAllEng),
-      });
-    }
-
-    if (selectedCategory === "all" || selectedCategory === "biology") {
-      sections.push({
-        title: "Biology",
-        books: filterBooks(biology),
-        loading: loadingBio,
-        showAll: showAllBio,
-        toggleShowAll: () => setShowAllBio(!showAllBio),
-      });
-    }
+    pushSection(
+      "mathematics",
+      "Mathematics",
+      mathematics,
+      loadingMath,
+      showAllMath,
+      () => setShowAllMath(!showAllMath)
+    );
+    pushSection(
+      "programming",
+      "Programming & Computer Science",
+      programming,
+      loadingProg,
+      showAllProg,
+      () => setShowAllProg(!showAllProg)
+    );
+    pushSection("physics", "Physics", physics, loadingPhys, showAllPhys, () =>
+      setShowAllPhys(!showAllPhys)
+    );
+    pushSection(
+      "engineering",
+      "Engineering",
+      engineering,
+      loadingEng,
+      showAllEng,
+      () => setShowAllEng(!showAllEng)
+    );
+    pushSection(
+      "chemistry",
+      "Chemistry",
+      chemistry,
+      loadingChem,
+      showAllChem,
+      () => setShowAllChem(!showAllChem)
+    );
+    pushSection("biology", "Biology", biology, loadingBio, showAllBio, () =>
+      setShowAllBio(!showAllBio)
+    );
+    pushSection("medicine", "Medicine", medicine, loadingMed, showAllMed, () =>
+      setShowAllMed(!showAllMed)
+    );
+    pushSection("history", "History", history, loadingHist, showAllHist, () =>
+      setShowAllHist(!showAllHist)
+    );
+    pushSection(
+      "economics",
+      "Economics",
+      economics,
+      loadingEcon,
+      showAllEcon,
+      () => setShowAllEcon(!showAllEcon)
+    );
+    pushSection(
+      "psychology",
+      "Psychology",
+      psychology,
+      loadingPsych,
+      showAllPsych,
+      () => setShowAllPsych(!showAllPsych)
+    );
 
     return sections;
   };
@@ -236,18 +337,27 @@ const UserDashboard = () => {
 
   return (
     <div
-      style={{ minHeight: "100vh", background: theme.bg, color: theme.text }}
+      style={{
+        minHeight: "100vh",
+        background: theme.bg,
+        color: theme.text,
+        fontFamily: "'Arial', 'Helvetica', sans-serif",
+      }}
     >
       <UserNavBar />
+
       <div className="container mx-auto px-6 py-8">
         <h1
-          className="text-3xl font-serif font-bold mb-8"
-          style={{ color: theme.text }}
+          className="text-3xl font-bold mb-8"
+          style={{
+            color: theme.text,
+            fontFamily: "'Arial', 'Helvetica', sans-serif",
+          }}
         >
           Educational Library
         </h1>
 
-        {/* Search Bar and Category Filter */}
+        {/* Search + Filter */}
         <div className="mb-8 flex flex-col sm:flex-row gap-4">
           {/* Search Bar */}
           <div className="relative flex-1">
@@ -264,6 +374,7 @@ const UserDashboard = () => {
                 background: "#fff",
                 borderColor: "#D4B896",
                 color: theme.text,
+                fontFamily: "'Arial', 'Helvetica', sans-serif",
               }}
             />
             <svg
@@ -282,7 +393,7 @@ const UserDashboard = () => {
             </svg>
           </div>
 
-          {/* Category Filter Dropdown */}
+          {/* Category Dropdown */}
           <div className="relative sm:w-64">
             <button
               onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
@@ -291,9 +402,11 @@ const UserDashboard = () => {
                 background: "#fff",
                 borderColor: "#D4B896",
                 color: theme.text,
+                fontFamily: "'Arial', 'Helvetica', sans-serif",
               }}
             >
               <span>{selectedCategoryLabel}</span>
+
               <svg
                 className={`w-4 h-4 transition-transform ${
                   isCategoryDropdownOpen ? "rotate-180" : ""
@@ -331,6 +444,7 @@ const UserDashboard = () => {
                         selectedCategory === cat.value
                           ? theme.panel
                           : "transparent",
+                      fontFamily: "'Arial', 'Helvetica', sans-serif",
                     }}
                   >
                     {cat.label}
@@ -341,7 +455,7 @@ const UserDashboard = () => {
           </div>
         </div>
 
-        {/* Book Sections */}
+        {/* Render Sections */}
         {getVisibleSections().map((section) => (
           <Section
             key={section.title}
