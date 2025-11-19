@@ -1,5 +1,4 @@
 // src/data/demoBooks.js
-// Static demo books for when API is rate limited
 
 export const demoBooks = {
   mathematics: [
