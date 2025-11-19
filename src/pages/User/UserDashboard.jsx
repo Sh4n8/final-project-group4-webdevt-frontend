@@ -164,29 +164,40 @@ const UserDashboard = () => {
   ];
 
   useEffect(() => {
-    const fetchCategoryBooks = async (category, setter, loaderSetter) => {
-      loaderSetter(true);
-      try {
-        const res = await getBooksByCategory(category, 20);
-        setter(res.data.books || []);
-      } catch (err) {
-        console.error(`${category} fetch error:`, err);
-        setter([]);
-      } finally {
-        loaderSetter(false);
+    // FIXED: Load categories SEQUENTIALLY with delays to avoid rate limiting
+    const fetchAllCategories = async () => {
+      const categoriesToFetch = [
+        { name: "mathematics", setter: setMathematics, loader: setLoadingMath },
+        { name: "programming", setter: setProgramming, loader: setLoadingProg },
+        { name: "physics", setter: setPhysics, loader: setLoadingPhys },
+        { name: "engineering", setter: setEngineering, loader: setLoadingEng },
+        { name: "chemistry", setter: setChemistry, loader: setLoadingChem },
+        { name: "biology", setter: setBiology, loader: setLoadingBio },
+        { name: "medicine", setter: setMedicine, loader: setLoadingMed },
+        { name: "history", setter: setHistory, loader: setLoadingHist },
+        { name: "economics", setter: setEconomics, loader: setLoadingEcon },
+        { name: "psychology", setter: setPsychology, loader: setLoadingPsych },
+      ];
+
+      // Load each category one at a time with 800ms delay
+      for (const category of categoriesToFetch) {
+        category.loader(true);
+        try {
+          const res = await getBooksByCategory(category.name, 20);
+          category.setter(res.data.books || []);
+        } catch (err) {
+          console.error(`${category.name} fetch error:`, err);
+          category.setter([]);
+        } finally {
+          category.loader(false);
+        }
+
+        // Wait 800ms before next request to avoid rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 800));
       }
     };
-    // Fetch books for each educational category
-    fetchCategoryBooks("mathematics", setMathematics, setLoadingMath);
-    fetchCategoryBooks("programming", setProgramming, setLoadingProg);
-    fetchCategoryBooks("physics", setPhysics, setLoadingPhys);
-    fetchCategoryBooks("engineering", setEngineering, setLoadingEng);
-    fetchCategoryBooks("chemistry", setChemistry, setLoadingChem);
-    fetchCategoryBooks("biology", setBiology, setLoadingBio);
-    fetchCategoryBooks("medicine", setMedicine, setLoadingMed);
-    fetchCategoryBooks("history", setHistory, setLoadingHist);
-    fetchCategoryBooks("economics", setEconomics, setLoadingEcon);
-    fetchCategoryBooks("psychology", setPsychology, setLoadingPsych);
+
+    fetchAllCategories();
   }, []);
 
   const handleView = (googleId) => {
@@ -414,7 +425,9 @@ const UserDashboard = () => {
                     style={{
                       color: theme.text,
                       background:
-                        selectedCategory === cat.value ? theme.panel : "transparent",
+                        selectedCategory === cat.value
+                          ? theme.panel
+                          : "transparent",
                     }}
                   >
                     {cat.label}
