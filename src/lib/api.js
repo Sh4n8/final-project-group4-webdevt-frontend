@@ -2,7 +2,7 @@ import axios from "axios";
 
 const isDev = import.meta.env.DEV;
 const apiUrl = isDev
-  ? "/api"
+  ? "/api" // Vite dev server proxy
   : import.meta.env.VITE_API_URL ||
     "https://final-project-group4-webdev-backend-production.up.railway.app";
 
@@ -10,8 +10,10 @@ const api = axios.create({
   baseURL: apiUrl,
   timeout: 12_000,
   headers: { "Content-Type": "application/json" },
+  withCredentials: true, // allow cookies/auth headers
 });
 
+// Log requests in dev
 if (isDev) {
   api.interceptors.request.use((cfg) => {
     console.log(`[API] ${cfg.method?.toUpperCase()} ${cfg.url}`);
@@ -19,6 +21,7 @@ if (isDev) {
   });
 }
 
+// Response interceptor for errors
 api.interceptors.response.use(
   (r) => r,
   (e) => {
@@ -27,6 +30,7 @@ api.interceptors.response.use(
   }
 );
 
+// Auth helpers
 export const setAuthToken = (token) => {
   if (token) api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   else delete api.defaults.headers.common["Authorization"];
@@ -35,12 +39,11 @@ export const setAuthToken = (token) => {
 export const removeAuthToken = () =>
   delete api.defaults.headers.common["Authorization"];
 
-// ✅ Updated User API calls with /api prefix
-export const registerUser = (data) => api.post("/api/users/register", data);
-export const loginUser = (data) => api.post("/api/users/login", data);
-export const getProfile = () => api.get("/api/users/profile");
+export const registerUser = (data) => api.post("/users/register", data);
+export const loginUser = (data) => api.post("/users/login", data);
+export const getProfile = () => api.get("/users/profile");
 export const checkCredential = (c) =>
-  api.get("/api/users/check-credential", { params: { credential: c } });
+  api.get("/users/check-credential", { params: { credential: c } });
 
 // Book API calls (unchanged)
 export const searchBooks = (query, maxResults = 20) =>
