@@ -1,14 +1,16 @@
 import React, { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const UserNavBar = () => {
   const { user, logout } = useContext(AuthContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const location = useLocation();
 
   const displayName = user?.name || "Username";
   const avatarLetter = displayName.charAt(0).toUpperCase();
+  const isActive = (path) => location.pathname === path;
 
   return (
     <nav className="bg-[#F5E6D3] border-b border-[#D4B896]">
@@ -16,7 +18,6 @@ const UserNavBar = () => {
         <div className="flex items-center h-16">
           {/* Logo Section - Left Side */}
           <Link to="/dashboard" className="flex items-center gap-1 flex-shrink-0 cursor-pointer">
-
             <img 
               src="/logo-library.png" 
               alt="LibroLink Logo" 
@@ -34,14 +35,22 @@ const UserNavBar = () => {
           <div className="hidden md:flex items-center gap-6 ml-12">
             <Link
               to="/dashboard"
-              className="px-4 py-2 rounded-full font-medium transition-colors text-[#5D4E37] hover:bg-[#8B7355] hover:text-white"
+              className={`px-4 py-2 rounded-full font-medium transition-colors 
+                ${isActive("/dashboard")
+                  ? "bg-[#8B7355] text-white"
+                  : "text-[#5D4E37] hover:bg-[#8B7355] hover:text-white"
+                }`}
             >
               Explore
             </Link>
 
             <Link
               to="/library"
-              className="px-4 py-2 rounded-full font-medium transition-colors text-[#5D4E37] hover:bg-[#8B7355] hover:text-white"
+              className={`px-4 py-2 rounded-full font-medium transition-colors 
+                ${isActive("/library")
+                  ? "bg-[#8B7355] text-white"
+                  : "text-[#5D4E37] hover:bg-[#8B7355] hover:text-white"
+                }`}
             >
               My Library
             </Link>
@@ -163,15 +172,22 @@ const UserNavBar = () => {
               <div className="px-4">
                 <Link
                   to="/dashboard"
-                  className="text-[#5D4E37] hover:text-[#8B7355] font-medium transition-colors"
+                  className={`font-medium transition-colors px-4
+                    ${isActive("/dashboard")
+                      ? "text-white bg-[#8B7355] rounded-lg py-2"
+                      : "text-[#5D4E37] hover:text-[#8B7355]"
+                    }`}
                 >
                   Explore
                 </Link>
-              </div>
-              <div className="px-4">
+
                 <Link
                   to="/library"
-                  className="text-[#5D4E37] hover:text-[#8B7355] font-medium transition-colors"
+                  className={`font-medium transition-colors px-4
+                    ${isActive("/library")
+                      ? "text-white bg-[#8B7355] rounded-lg py-2"
+                      : "text-[#5D4E37] hover:text-[#8B7355]"
+                    }`}
                 >
                   My Library
                 </Link>
