@@ -6,9 +6,9 @@ import UserNavBar from "../../components/UserNavBar";
 
 const theme = {
   bg: "#f8f1e4",
-  panel: "#e6d6b8",
   text: "#3b2f2f",
   accent: "#7b4b26",
+  muted: "#6b5446",
 };
 
 const BookCard = ({ book, onView, onRemove }) => {
@@ -17,97 +17,88 @@ const BookCard = ({ book, onView, onRemove }) => {
     : "Unknown Author";
 
   const thumbnail =
-    book.thumbnail || "https://via.placeholder.com/300x450?text=No+Cover";
+    book.thumbnail || "https://via.placeholder.com/128x192?text=No+Cover";
 
   return (
     <div
-      className="rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group cursor-pointer flex flex-col"
+      className="rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 relative group"
       style={{ background: theme.panel }}
-      onClick={() => onView(book.googleId)}
     >
-      {/* Remove button */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           onRemove(book.googleId);
         }}
         className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center hover:bg-red-600"
-        style={{ fontFamily: "'Arial', 'Helvetica', sans-serif" }}
-        title="Remove"
+        title="Remove from library"
       >
-        ×
+        X
       </button>
 
-      {/* FULL COVER DISPLAY — FIXED */}
-      <div className="w-full h-56 bg-white flex items-center justify-center overflow-hidden">
-        <img
-          src={thumbnail}
-          alt={book.title}
-          className="w-full h-full object-contain"
-          onError={(e) => {
-            e.target.src = "https://via.placeholder.com/300x450?text=No+Cover";
-          }}
-        />
-      </div>
-
-      {/* Book details */}
-      <div className="p-3 flex flex-col flex-1">
-        {/* Multi-line title */}
-        <h3
-          className="font-semibold text-sm leading-tight line-clamp-2"
-          style={{
-            color: theme.text,
-            fontFamily: "'Arial', 'Helvetica', sans-serif",
-          }}
-        >
-          {book.title}
-        </h3>
-
-        {/* Multi-line authors */}
-        <p
-          className="text-xs mt-1 leading-tight line-clamp-2"
-          style={{
-            color: "#6b5446",
-            fontFamily: "'Arial', 'Helvetica', sans-serif",
-          }}
-        >
-          {authors}
-        </p>
-
-        {book.category && (
-          <p
-            className="text-xs mt-1"
-            style={{
-              color: theme.accent,
-              fontFamily: "'Arial', 'Helvetica', sans-serif",
+      <div className="cursor-pointer" onClick={() => onView(book.googleId)}>
+        <div className="h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
+          <img
+            src={thumbnail}
+            alt={book.title}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.src =
+                "https://via.placeholder.com/128x192?text=No+Cover";
             }}
+          />
+        </div>
+        <div className="p-3">
+          <h3
+            className="text-sm font-semibold line-clamp-2"
+            style={{ color: theme.text }}
           >
-            {book.category}
+            {book.title}
+          </h3>
+          <p className="text-xs mt-1 line-clamp-1" style={{ color: "#6b5446" }}>
+            {authors}
           </p>
-        )}
+          {book.category && (
+            <p className="text-xs mt-1" style={{ color: theme.accent }}>
+              {book.category}
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-const LibrarySection = ({ title, books, onView, onRemove, emptyMessage }) => {
+const EmptyShelf = ({ message }) => (
+  <div className="py-8 text-center">
+    <p className="text-sm italic" style={{ color: theme.muted, fontFamily: "'Georgia', serif" }}>
+      {message}
+    </p>
+  </div>
+);
+
+const LibraryShelf = ({ title, books, onRemove, icon }) => {
+  if (books.length === 0) {
+    return (
+      <section className="mb-10">
+        <h2 className="text-base mb-4 flex items-center gap-2" style={{ color: theme.text, fontFamily: "'Georgia', serif" }}>
+          {icon} {title}
+        </h2>
+        <EmptyShelf message={`No books in ${title.toLowerCase()} yet.`} />
+      </section>
+    );
+  }
+
   return (
     <div className="mb-10">
       <div className="flex items-center justify-between mb-4">
         <h2
-          className="text-xl font-bold"
-          style={{
-            color: theme.text,
-            fontFamily: "'Arial', 'Helvetica', sans-serif",
-          }}
+          className="text-xl font-serif font-bold"
+          style={{ color: theme.text }}
         >
           {title}
           <span
             className="text-sm font-normal ml-2"
-            style={{
-              color: "#6b5446",
-              fontFamily: "'Arial', 'Helvetica', sans-serif",
-            }}
+            style={{ color: "#6b5446" }}
           >
             ({books.length} books)
           </span>
@@ -130,13 +121,7 @@ const LibrarySection = ({ title, books, onView, onRemove, emptyMessage }) => {
           className="text-center py-12 rounded-lg"
           style={{ background: theme.panel }}
         >
-          <p
-            className="text-sm"
-            style={{
-              color: "#6b5446",
-              fontFamily: "'Arial', 'Helvetica', sans-serif",
-            }}
-          >
+          <p className="text-sm" style={{ color: "#6b5446" }}>
             {emptyMessage}
           </p>
         </div>
@@ -147,9 +132,6 @@ const LibrarySection = ({ title, books, onView, onRemove, emptyMessage }) => {
 
 const UserLibrary = () => {
   const { user } = useContext(AuthContext);
-  const navigate = useNavigate();
-
-  // State for different reading lists
   const [readingList, setReadingList] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [thesis, setThesis] = useState([]);
@@ -157,83 +139,34 @@ const UserLibrary = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: Fetch user's saved books from backend
-    // For now, using mock data from localStorage
-    const loadSavedBooks = () => {
+    const load = () => {
       try {
-        const savedReadingList = JSON.parse(
-          localStorage.getItem("readingList") || "[]"
-        );
-        const savedFavorites = JSON.parse(
-          localStorage.getItem("favorites") || "[]"
-        );
-        const savedThesis = JSON.parse(localStorage.getItem("thesis") || "[]");
-        const savedJournals = JSON.parse(
-          localStorage.getItem("journals") || "[]"
-        );
-
-        setReadingList(savedReadingList);
-        setFavorites(savedFavorites);
-        setThesis(savedThesis);
-        setJournals(savedJournals);
-      } catch (err) {
-        console.error("Error loading saved books:", err);
-      } finally {
-        setLoading(false);
-      }
+        setReadingList(JSON.parse(localStorage.getItem("readingList") || "[]"));
+        setFavorites(JSON.parse(localStorage.getItem("favorites") || "[]"));
+        setThesis(JSON.parse(localStorage.getItem("thesis") || "[]"));
+        setJournals(JSON.parse(localStorage.getItem("journals") || "[]"));
+      } catch (e) { console.error(e); }
+      setLoading(false);
     };
-
-    loadSavedBooks();
+    load();
   }, []);
 
-  const handleView = (googleId) => {
-    navigate(`/dashboard/book/${googleId}`);
+  const removeFromList = (id, setter, key) => {
+    setter(prev => {
+      const updated = prev.filter(b => b.googleId !== id);
+      localStorage.setItem(key, JSON.stringify(updated));
+      return updated;
+    });
   };
 
-  const handleRemove = (googleId, listName) => {
-    // TODO: Remove from backend
-    // For now, remove from localStorage
-    const currentList = JSON.parse(localStorage.getItem(listName) || "[]");
-    const updatedList = currentList.filter(
-      (book) => book.googleId !== googleId
-    );
-    localStorage.setItem(listName, JSON.stringify(updatedList));
-
-    // Update state
-    switch (listName) {
-      case "readingList":
-        setReadingList(updatedList);
-        break;
-      case "favorites":
-        setFavorites(updatedList);
-        break;
-      case "thesis":
-        setThesis(updatedList);
-        break;
-      case "journals":
-        setJournals(updatedList);
-        break;
-    }
-  };
+  const total = readingList.length + favorites.length + thesis.length + journals.length;
 
   if (loading) {
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          background: theme.bg,
-          fontFamily: "'Arial', 'Helvetica', sans-serif",
-        }}
-      >
+      <div style={{ minHeight: "100vh", background: theme.bg }}>
         <UserNavBar />
         <div className="container mx-auto px-6 py-8 flex justify-center">
-          <div
-            className="animate-pulse text-lg"
-            style={{
-              color: theme.text,
-              fontFamily: "'Arial', 'Helvetica', sans-serif",
-            }}
-          >
+          <div className="animate-pulse text-lg" style={{ color: theme.text }}>
             Loading your library...
           </div>
         </div>
@@ -241,37 +174,20 @@ const UserLibrary = () => {
     );
   }
 
-  const totalBooks =
-    readingList.length + favorites.length + thesis.length + journals.length;
-
   return (
     <div
-      style={{
-        minHeight: "100vh",
-        background: theme.bg,
-        color: theme.text,
-        fontFamily: "'Arial', 'Helvetica', sans-serif",
-      }}
+      style={{ minHeight: "100vh", background: theme.bg, color: theme.text }}
     >
       <UserNavBar />
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8">
           <h1
-            className="text-3xl font-bold"
-            style={{
-              color: theme.text,
-              fontFamily: "'Arial', 'Helvetica', sans-serif",
-            }}
+            className="text-3xl font-serif font-bold"
+            style={{ color: theme.text }}
           >
             My Library
           </h1>
-          <p
-            className="text-sm mt-2"
-            style={{
-              color: "#6b5446",
-              fontFamily: "'Arial', 'Helvetica', sans-serif",
-            }}
-          >
+          <p className="text-sm mt-2" style={{ color: "#6b5446" }}>
             {totalBooks} {totalBooks === 1 ? "book" : "books"} in your personal
             collection
           </p>
@@ -280,33 +196,26 @@ const UserLibrary = () => {
         <LibrarySection
           title="My Reading List"
           books={readingList}
-          onView={handleView}
-          onRemove={(id) => handleRemove(id, "readingList")}
-          emptyMessage="No books in your reading list yet. Start exploring and add books!"
+          icon="Open Book"
+          onRemove={(id) => removeFromList(id, setReadingList, "readingList")}
         />
-
-        <LibrarySection
+        <LibraryShelf
           title="Favorites"
           books={favorites}
-          onView={handleView}
-          onRemove={(id) => handleRemove(id, "favorites")}
-          emptyMessage="No favorite books yet. Mark books as favorites to see them here!"
+          icon="Red Heart"
+          onRemove={(id) => removeFromList(id, setFavorites, "favorites")}
         />
-
-        <LibrarySection
-          title="Thesis Materials"
+        <LibraryShelf
+          title="Thesis"
           books={thesis}
-          onView={handleView}
-          onRemove={(id) => handleRemove(id, "thesis")}
-          emptyMessage="No thesis materials saved yet."
+          icon="Graduation Cap"
+          onRemove={(id) => removeFromList(id, setThesis, "thesis")}
         />
-
-        <LibrarySection
-          title="Journals & Research"
+        <LibraryShelf
+          title="Journals"
           books={journals}
-          onView={handleView}
-          onRemove={(id) => handleRemove(id, "journals")}
-          emptyMessage="No journals saved yet."
+          icon="Clipboard"
+          onRemove={(id) => removeFromList(id, setJournals, "journals")}
         />
       </div>
     </div>
