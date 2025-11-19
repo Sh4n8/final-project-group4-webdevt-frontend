@@ -2,12 +2,13 @@
 import axios from "axios";
 
 const isDev = import.meta.env.DEV;
-const baseURL = isDev
-  ? "/api"
-  : import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const apiUrl = isDev
+  ? "/api" 
+  : import.meta.env.VITE_API_URL ||
+    "https://final-project-group4-webdev-backend-production.up.railway.app"; 
 
 const api = axios.create({
-  baseURL,
+  baseURL: apiUrl,
   timeout: 12_000,
   headers: { "Content-Type": "application/json" },
 });
@@ -31,15 +32,18 @@ export const setAuthToken = (token) => {
   if (token) api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   else delete api.defaults.headers.common["Authorization"];
 };
+
 export const removeAuthToken = () =>
   delete api.defaults.headers.common["Authorization"];
 
+// User API calls (no extra /api prefix!)
 export const registerUser = (data) => api.post("/users/register", data);
 export const loginUser = (data) => api.post("/users/login", data);
 export const getProfile = () => api.get("/users/profile");
 export const checkCredential = (c) =>
   api.get("/users/check-credential", { params: { credential: c } });
 
+// Book API calls
 export const searchBooks = (query, maxResults = 20) =>
   api.get("/books/search", { params: { query, maxResults } });
 
