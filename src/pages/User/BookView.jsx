@@ -1,4 +1,9 @@
-// Updated BookView.jsx (aesthetic improvements, reduced spacing)
+<<<<<<<<< Temporary merge branch 1
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import UserNavbar from "../../components/UserNavBar.jsx";
+=========
+// src/pages/User/BookView.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getBookById } from "../../lib/api";
@@ -17,6 +22,8 @@ const BookView = () => {
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showAddMenu, setShowAddMenu] = useState(false);
+
+  // ✔️ Default Lists
   const [selectedLists, setSelectedLists] = useState({
     readingList: false,
     favorites: false,
@@ -24,26 +31,26 @@ const BookView = () => {
     journals: false,
   });
 
+  // ✔️ NEW STATE for custom lists
+  const [customLists, setCustomLists] = useState(
+    JSON.parse(localStorage.getItem("customLists") || "[]")
+  );
+
+  const [newListName, setNewListName] = useState(""); // ✔️ holds typed input
+
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        console.log("Fetching book with ID:", bookId);
         const res = await getBookById(bookId);
-        console.log("Book data received:", res.data);
         setBook(res.data);
       } catch (err) {
         console.error("Error fetching book:", err);
-        console.error("Error details:", err.response?.data || err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    if (bookId) {
-      fetchBook();
-    } else {
-      setLoading(false);
-    }
+    if (bookId) fetchBook();
   }, [bookId]);
 
   const handleToggleList = (list) => {
@@ -53,8 +60,31 @@ const BookView = () => {
     }));
   };
 
+  // ✔️ CREATE NEW LIST
+  const handleAddNewList = () => {
+    const name = newListName.trim();
+    if (!name) return;
+
+    // Prevent duplicates
+    if (customLists.includes(name)) {
+      alert("List already exists.");
+      return;
+    }
+
+    const updated = [...customLists, name];
+    setCustomLists(updated);
+    localStorage.setItem("customLists", JSON.stringify(updated));
+
+    // Add to checkbox state
+    setSelectedLists((prev) => ({
+      ...prev,
+      [name]: true,
+    }));
+
+    setNewListName(""); // Clear input
+  };
+
   const handleDone = () => {
-    // Save to localStorage for now
     const bookData = {
       googleId: book.googleId,
       title: book.title,
@@ -63,11 +93,13 @@ const BookView = () => {
       categories: book.categories,
     };
 
-    Object.keys(selectedLists).forEach((listName) => {
+    // ✔️ Combine default + custom lists
+    const allLists = [...Object.keys(selectedLists), ...customLists];
+
+    allLists.forEach((listName) => {
       if (selectedLists[listName]) {
         const currentList = JSON.parse(localStorage.getItem(listName) || "[]");
 
-        // Check if book already exists
         const exists = currentList.some((b) => b.googleId === book.googleId);
 
         if (!exists) {
@@ -132,7 +164,6 @@ const BookView = () => {
       <UserNavBar />
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left: Book Cover */}
           <div className="lg:col-span-1">
             <div
               className="rounded-lg overflow-hidden shadow-lg"
@@ -150,7 +181,6 @@ const BookView = () => {
             </div>
           </div>
 
-          {/* Right: Book Info */}
           <div className="lg:col-span-2">
             <h1
               className="text-3xl font-serif font-bold mb-2"
@@ -162,7 +192,6 @@ const BookView = () => {
               {book.subtitle || `By ${authors}`}
             </p>
 
-            {/* Book Stats */}
             <div className="flex flex-wrap gap-4 mb-6">
               <div className="flex items-center gap-2">
                 <span
@@ -175,6 +204,7 @@ const BookView = () => {
                   {pageCount}
                 </span>
               </div>
+
               <div className="flex items-center gap-2">
                 <span
                   className="text-sm font-medium"
@@ -186,6 +216,7 @@ const BookView = () => {
                   {publishedDate}
                 </span>
               </div>
+
               {book.publisher && (
                 <div className="flex items-center gap-2">
                   <span
@@ -199,6 +230,7 @@ const BookView = () => {
                   </span>
                 </div>
               )}
+
               {book.averageRating && (
                 <div className="flex items-center gap-2">
                   <span
@@ -214,7 +246,6 @@ const BookView = () => {
               )}
             </div>
 
-            {/* Categories */}
             <div className="mb-6">
               <span
                 className="text-sm font-medium"
@@ -227,19 +258,16 @@ const BookView = () => {
               </p>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-3 mb-8 relative">
               <button
                 className="px-6 py-3 rounded-lg text-white font-medium hover:opacity-90 transition"
                 style={{ background: theme.accent }}
                 onClick={() => {
-                  // Try multiple preview options
                   if (book.previewLink) {
                     window.open(book.previewLink, "_blank");
                   } else if (book.infoLink) {
                     window.open(book.infoLink, "_blank");
                   } else if (book.googleId) {
-                    // Fallback: construct Google Books URL directly
                     window.open(
                       `https://books.google.com/books?id=${book.googleId}`,
                       "_blank"
@@ -251,94 +279,122 @@ const BookView = () => {
               >
                 Start Reading
               </button>
-              <button
-                className="px-6 py-3 rounded-lg font-medium border-2 hover:opacity-90 transition relative"
-                style={{
-                  background: theme.panel,
-                  borderColor: theme.accent,
-                  color: theme.accent,
-                }}
-                onClick={() => setShowAddMenu(!showAddMenu)}
-              >
-                Add to +
-              </button>
 
-              {/* Add to Menu Dropdown */}
-              {showAddMenu && (
-                <div
-                  className="absolute top-full mt-2 right-0 rounded-lg shadow-lg p-4 z-10 w-64"
-                  style={{ background: theme.panel }}
+              <div className="relative">
+                <button
+                  className="px-6 py-3 rounded-lg font-medium border-2 hover:opacity-90 transition"
+                  style={{
+                    background: theme.panel,
+                    borderColor: theme.accent,
+                    color: theme.accent,
+                  }}
+                  onClick={() => setShowAddMenu(!showAddMenu)}
                 >
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-semibold" style={{ color: theme.text }}>
-                      Add to
-                    </h3>
-                    <button
-                      onClick={handleDone}
-                      className="text-sm font-medium hover:underline"
-                      style={{ color: theme.accent }}
-                    >
-                      Done
-                    </button>
-                  </div>
+                  Add to +
+                </button>
 
-                  {/* List Options */}
-                  <div className="space-y-2">
-                    {[
-                      { key: "readingList", label: "My Reading List" },
-                      { key: "favorites", label: "Favorites" },
-                      { key: "thesis", label: "Thesis" },
-                      { key: "journals", label: "Journals" },
-                    ].map((list) => (
-                      <label
-                        key={list.key}
-                        className="flex items-center justify-between cursor-pointer hover:opacity-80 p-2 rounded"
-                        style={{ background: "#f8f1e4" }}
+                {showAddMenu && (
+                  <div
+                    className="absolute top-0 left-full ml-1 rounded-lg shadow-lg p-4 z-10 w-64 sm:w-72"
+                    style={{ background: theme.panel }}
+                  >
+                    {/* Header */}
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="font-semibold text-sm" style={{ color: theme.text }}>
+                        Add to
+                      </h3>
+                      <button
+                        onClick={handleDone}
+                        className="text-sm font-medium hover:underline"
+                        style={{ color: theme.accent }}
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">📚</span>
-                          <span
-                            className="text-sm"
-                            style={{ color: theme.text }}
-                          >
-                            {list.label}
-                          </span>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={selectedLists[list.key]}
-                          onChange={() => handleToggleList(list.key)}
-                          className="w-4 h-4 cursor-pointer"
-                          style={{ accentColor: theme.accent }}
-                        />
-                      </label>
-                    ))}
-                  </div>
+                        Done
+                      </button>
+                    </div>
 
-                  {/* Add New List Input */}
-                  <div className="mt-3 flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Add new reading list..."
-                      className="flex-1 px-3 py-2 rounded text-sm border"
-                      style={{
-                        background: "#fff",
-                        borderColor: "#d0c4a8",
-                        color: theme.text,
-                      }}
-                    />
-                    <button
-                      className="px-3 py-2 rounded"
-                      style={{ background: theme.accent, color: "white" }}
-                    >
-                      ⊕
-                    </button>
+                    {/* List of Checkboxes */}
+                    <div className="space-y-2 mb-3">
+                      {/* Default Lists */}
+                      {[
+                        { key: "readingList", label: "My Reading List" },
+                        { key: "favorites", label: "Favorites" },
+                        { key: "thesis", label: "Thesis" },
+                        { key: "journals", label: "Journals" },
+                      ].map((list) => (
+                        <label
+                          key={list.key}
+                          className="flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-[#eadfc6] transition"
+                          style={{ background: "#f8f1e4" }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">📚</span>
+                            <span className="text-sm font-medium" style={{ color: theme.text }}>
+                              {list.label}
+                            </span>
+                          </div>
+
+                          <input
+                            type="checkbox"
+                            checked={selectedLists[list.key]}
+                            onChange={() => handleToggleList(list.key)}
+                            className="w-4 h-4 cursor-pointer"
+                            style={{ accentColor: theme.accent }}
+                          />
+                        </label>
+                      ))}
+
+                      {/* ✔️ CUSTOM LISTS */}
+                      {customLists.map((name) => (
+                        <label
+                          key={name}
+                          className="flex items-center justify-between p-2 rounded-lg cursor-pointer hover:bg-[#eadfc6] transition"
+                          style={{ background: "#f8f1e4" }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">📝</span>
+                            <span className="text-sm font-medium" style={{ color: theme.text }}>
+                              {name}
+                            </span>
+                          </div>
+
+                          <input
+                            type="checkbox"
+                            checked={selectedLists[name] || false}
+                            onChange={() => handleToggleList(name)}
+                            className="w-4 h-4"
+                            style={{ accentColor: theme.accent }}
+                          />
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* Add New List */}
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="New list..."
+                        value={newListName}
+                        onChange={(e) => setNewListName(e.target.value)}
+                        className="flex-1 px-3 py-2 rounded-lg text-sm border focus:outline-none focus:ring-1"
+                        style={{
+                          background: "#fff",
+                          borderColor: "#d0c4a8",
+                          color: theme.text,
+                        }}
+                      />
+
+                      <button
+                        className="px-3 py-2 rounded-lg text-lg flex items-center justify-center"
+                        onClick={handleAddNewList}
+                        style={{ background: theme.accent, color: "white" }}
+                      >
+                        ⊕
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-
-            {/* Abstract */}
             <div>
               <h2
                 className="text-xl font-serif font-bold mb-3"

@@ -17,53 +17,62 @@ const BookCard = ({ book, onView, onRemove }) => {
     : "Unknown Author";
 
   const thumbnail =
-    book.thumbnail || "https://via.placeholder.com/128x192?text=No+Cover";
+    book.thumbnail || "https://via.placeholder.com/300x450?text=No+Cover";
 
   return (
     <div
-      className="rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 relative group"
+      className="rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group cursor-pointer flex flex-col"
       style={{ background: theme.panel }}
+      onClick={() => onView(book.googleId)}
     >
-      {/* Remove button - shows on hover */}
+      {/* Remove button */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           onRemove(book.googleId);
         }}
         className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center hover:bg-red-600"
-        title="Remove from library"
+        style={{ fontFamily: "'Arial', 'Helvetica', sans-serif" }}
+        title="Remove"
       >
         ×
       </button>
 
-      <div className="cursor-pointer" onClick={() => onView(book.googleId)}>
-        <div className="h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
-          <img
-            src={thumbnail}
-            alt={book.title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              e.target.src =
-                "https://via.placeholder.com/128x192?text=No+Cover";
-            }}
-          />
-        </div>
-        <div className="p-3">
-          <h3
-            className="text-sm font-semibold line-clamp-2"
-            style={{ color: theme.text }}
-          >
-            {book.title}
-          </h3>
-          <p className="text-xs mt-1 line-clamp-1" style={{ color: "#6b5446" }}>
-            {authors}
+      {/* FULL COVER DISPLAY — FIXED */}
+      <div className="w-full h-56 bg-white flex items-center justify-center overflow-hidden">
+        <img
+          src={thumbnail}
+          alt={book.title}
+          className="w-full h-full object-contain"
+          onError={(e) => {
+            e.target.src = "https://via.placeholder.com/300x450?text=No+Cover";
+          }}
+        />
+      </div>
+
+      {/* Book details */}
+      <div className="p-3 flex flex-col flex-1">
+        {/* Multi-line title */}
+        <h3
+          className="font-semibold text-sm leading-tight line-clamp-2"
+          style={{ color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}
+        >
+          {book.title}
+        </h3>
+
+        {/* Multi-line authors */}
+        <p
+          className="text-xs mt-1 leading-tight line-clamp-2"
+          style={{ color: "#6b5446", fontFamily: "'Arial', 'Helvetica', sans-serif" }}
+        >
+          {authors}
+        </p>
+
+        {book.category && (
+          <p className="text-xs mt-1" style={{ color: theme.accent, fontFamily: "'Arial', 'Helvetica', sans-serif" }}>
+            {book.category}
           </p>
-          {book.category && (
-            <p className="text-xs mt-1" style={{ color: theme.accent }}>
-              {book.category}
-            </p>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
@@ -74,13 +83,13 @@ const LibrarySection = ({ title, books, onView, onRemove, emptyMessage }) => {
     <div className="mb-10">
       <div className="flex items-center justify-between mb-4">
         <h2
-          className="text-xl font-serif font-bold"
-          style={{ color: theme.text }}
+          className="text-xl font-bold"
+          style={{ color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}
         >
           {title}
           <span
             className="text-sm font-normal ml-2"
-            style={{ color: "#6b5446" }}
+            style={{ color: "#6b5446", fontFamily: "'Arial', 'Helvetica', sans-serif" }}
           >
             ({books.length} books)
           </span>
@@ -103,7 +112,7 @@ const LibrarySection = ({ title, books, onView, onRemove, emptyMessage }) => {
           className="text-center py-12 rounded-lg"
           style={{ background: theme.panel }}
         >
-          <p className="text-sm" style={{ color: "#6b5446" }}>
+          <p className="text-sm" style={{ color: "#6b5446", fontFamily: "'Arial', 'Helvetica', sans-serif" }}>
             {emptyMessage}
           </p>
         </div>
@@ -185,10 +194,10 @@ const UserLibrary = () => {
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: theme.bg }}>
+      <div style={{ minHeight: "100vh", background: theme.bg, fontFamily: "'Arial', 'Helvetica', sans-serif" }}>
         <UserNavBar />
         <div className="container mx-auto px-6 py-8 flex justify-center">
-          <div className="animate-pulse text-lg" style={{ color: theme.text }}>
+          <div className="animate-pulse text-lg" style={{ color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}>
             Loading your library...
           </div>
         </div>
@@ -201,18 +210,18 @@ const UserLibrary = () => {
 
   return (
     <div
-      style={{ minHeight: "100vh", background: theme.bg, color: theme.text }}
+      style={{ minHeight: "100vh", background: theme.bg, color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}
     >
       <UserNavBar />
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8">
           <h1
-            className="text-3xl font-serif font-bold"
-            style={{ color: theme.text }}
+            className="text-3xl font-bold"
+            style={{ color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}
           >
             My Library
           </h1>
-          <p className="text-sm mt-2" style={{ color: "#6b5446" }}>
+          <p className="text-sm mt-2" style={{ color: "#6b5446", fontFamily: "'Arial', 'Helvetica', sans-serif" }}>
             {totalBooks} {totalBooks === 1 ? "book" : "books"} in your personal
             collection
           </p>
