@@ -1,7 +1,8 @@
-// Updated BookView.jsx (aesthetic improvements, reduced spacing)
+// src/pages/User/BookView.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getBookById } from "../../lib/api";
+import { getDemoBookById } from "../../data/demoBooks";
 import UserNavBar from "../../components/UserNavBar";
 
 const theme = {
@@ -27,6 +28,17 @@ const BookView = () => {
   useEffect(() => {
     const fetchBook = async () => {
       try {
+        // Check if it's a demo book first
+        if (bookId.startsWith("demo-")) {
+          const demoBook = getDemoBookById(bookId);
+          if (demoBook) {
+            setBook(demoBook);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Otherwise, fetch from API
         console.log("Fetching book with ID:", bookId);
         const res = await getBookById(bookId);
         console.log("Book data received:", res.data);
@@ -340,10 +352,9 @@ const BookView = () => {
               <p
                 className="text-sm leading-relaxed text-justify"
                 style={{ color: "#6b5446" }}
-                dangerouslySetInnerHTML={{
-                  __html: book.description || "No description available.",
-                }}
-              />
+              >
+                {book.description || "No description available."}
+              </p>
             </div>
           </div>
         </div>
