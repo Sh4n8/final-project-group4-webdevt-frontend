@@ -3,7 +3,6 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import UserNavBar from "../../components/UserNavBar";
-import { getBooksByCategory } from "../../lib/api";
 import { demoBooks } from "../../data/bookHelpers";
 
 const theme = {
@@ -165,42 +164,37 @@ const UserDashboard = () => {
   ];
 
   useEffect(() => {
-    // FIXED: Load categories SEQUENTIALLY with delays to avoid rate limiting
-    const fetchAllCategories = async () => {
-      // Load only 5 most popular categories to avoid rate limiting
-      const categoriesToFetch = [
-        { name: "mathematics", setter: setMathematics, loader: setLoadingMath },
-        { name: "programming", setter: setProgramming, loader: setLoadingProg },
-        { name: "physics", setter: setPhysics, loader: setLoadingPhys },
-        { name: "engineering", setter: setEngineering, loader: setLoadingEng },
-        { name: "biology", setter: setBiology, loader: setLoadingBio },
-      ];
+    // Use demo books instead of API to avoid rate limiting
+    setMathematics(demoBooks.mathematics || []);
+    setLoadingMath(false);
 
-      // Load each category one at a time with 3 second delay to avoid rate limiting
-      for (const category of categoriesToFetch) {
-        category.loader(true);
-        try {
-          const res = await getBooksByCategory(category.name, 20);
-          category.setter(res.data.books || []);
-        } catch (err) {
-          console.error(`${category.name} fetch error:`, err);
-          // If rate limited, still show empty but don't break
-          if (err.response?.status === 429) {
-            console.warn(
-              `Rate limited on ${category.name}, will retry on next page load`
-            );
-          }
-          category.setter([]);
-        } finally {
-          category.loader(false);
-        }
+    setProgramming(demoBooks.programming || []);
+    setLoadingProg(false);
 
-        // Wait 3000ms (3 seconds) before next request to avoid rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-      }
-    };
+    setPhysics(demoBooks.physics || []);
+    setLoadingPhys(false);
 
-    fetchAllCategories();
+    setEngineering(demoBooks.engineering || []);
+    setLoadingEng(false);
+
+    setBiology(demoBooks.biology || []);
+    setLoadingBio(false);
+
+    // Set other categories to empty arrays for now
+    setChemistry([]);
+    setLoadingChem(false);
+
+    setMedicine([]);
+    setLoadingMed(false);
+
+    setHistory([]);
+    setLoadingHist(false);
+
+    setEconomics([]);
+    setLoadingEcon(false);
+
+    setPsychology([]);
+    setLoadingPsych(false);
   }, []);
 
   const handleView = (googleId) => {
