@@ -22,11 +22,6 @@ const AdminNavBar = () => {
     },
     { name: "Book", icon: <BookOpen size={20} />, path: "/admin/books" },
     { name: "Users", icon: <Users size={20} />, path: "/admin/users" },
-    {
-      name: "Categories",
-      icon: <FolderOpen size={20} />,
-      path: "/admin/categories",
-    }
   ];
 
   return (
