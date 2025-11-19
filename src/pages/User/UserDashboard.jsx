@@ -44,14 +44,6 @@ const BookCard = ({ book, onView }) => {
         <p className="text-xs mt-1 line-clamp-1" style={{ color: "#6b5446" }}>
           {authors}
         </p>
-        {book.averageRating && (
-          <div className="flex items-center gap-1 mt-1">
-            <span className="text-yellow-600 text-xs">★</span>
-            <span className="text-xs" style={{ color: theme.accent }}>
-              {book.averageRating}
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -111,34 +103,19 @@ const UserDashboard = () => {
   const [programming, setProgramming] = useState([]);
   const [physics, setPhysics] = useState([]);
   const [engineering, setEngineering] = useState([]);
-  const [chemistry, setChemistry] = useState([]);
   const [biology, setBiology] = useState([]);
-  const [medicine, setMedicine] = useState([]);
-  const [history, setHistory] = useState([]);
-  const [economics, setEconomics] = useState([]);
-  const [psychology, setPsychology] = useState([]);
 
   const [loadingMath, setLoadingMath] = useState(true);
   const [loadingProg, setLoadingProg] = useState(true);
   const [loadingPhys, setLoadingPhys] = useState(true);
   const [loadingEng, setLoadingEng] = useState(true);
-  const [loadingChem, setLoadingChem] = useState(true);
   const [loadingBio, setLoadingBio] = useState(true);
-  const [loadingMed, setLoadingMed] = useState(true);
-  const [loadingHist, setLoadingHist] = useState(true);
-  const [loadingEcon, setLoadingEcon] = useState(true);
-  const [loadingPsych, setLoadingPsych] = useState(true);
 
   const [showAllMath, setShowAllMath] = useState(false);
   const [showAllProg, setShowAllProg] = useState(false);
   const [showAllPhys, setShowAllPhys] = useState(false);
   const [showAllEng, setShowAllEng] = useState(false);
-  const [showAllChem, setShowAllChem] = useState(false);
   const [showAllBio, setShowAllBio] = useState(false);
-  const [showAllMed, setShowAllMed] = useState(false);
-  const [showAllHist, setShowAllHist] = useState(false);
-  const [showAllEcon, setShowAllEcon] = useState(false);
-  const [showAllPsych, setShowAllPsych] = useState(false);
 
   // Search and filter states - restore from sessionStorage on mount
   const [searchQuery, setSearchQuery] = useState(() => {
@@ -155,44 +132,39 @@ const UserDashboard = () => {
     { value: "programming", label: "Programming & Computer Science" },
     { value: "physics", label: "Physics" },
     { value: "engineering", label: "Engineering" },
-    { value: "chemistry", label: "Chemistry" },
     { value: "biology", label: "Biology" },
-    { value: "medicine", label: "Medicine" },
-    { value: "history", label: "History" },
-    { value: "economics", label: "Economics" },
-    { value: "psychology", label: "Psychology" },
   ];
 
   useEffect(() => {
     // Use demo books instead of API to avoid rate limiting
     setMathematics(demoBooks.mathematics || []);
     setLoadingMath(false);
-
+    
     setProgramming(demoBooks.programming || []);
     setLoadingProg(false);
-
+    
     setPhysics(demoBooks.physics || []);
     setLoadingPhys(false);
-
+    
     setEngineering(demoBooks.engineering || []);
     setLoadingEng(false);
-
+    
     setBiology(demoBooks.biology || []);
     setLoadingBio(false);
-
+    
     // Set other categories to empty arrays for now
     setChemistry([]);
     setLoadingChem(false);
-
+    
     setMedicine([]);
     setLoadingMed(false);
-
+    
     setHistory([]);
     setLoadingHist(false);
-
+    
     setEconomics([]);
     setLoadingEcon(false);
-
+    
     setPsychology([]);
     setLoadingPsych(false);
   }, []);
