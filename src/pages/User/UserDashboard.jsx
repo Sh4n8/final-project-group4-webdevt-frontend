@@ -139,34 +139,18 @@ const UserDashboard = () => {
     // Use demo books instead of API to avoid rate limiting
     setMathematics(demoBooks.mathematics || []);
     setLoadingMath(false);
-    
+
     setProgramming(demoBooks.programming || []);
     setLoadingProg(false);
-    
+
     setPhysics(demoBooks.physics || []);
     setLoadingPhys(false);
-    
+
     setEngineering(demoBooks.engineering || []);
     setLoadingEng(false);
-    
+
     setBiology(demoBooks.biology || []);
     setLoadingBio(false);
-    
-    // Set other categories to empty arrays for now
-    setChemistry([]);
-    setLoadingChem(false);
-    
-    setMedicine([]);
-    setLoadingMed(false);
-    
-    setHistory([]);
-    setLoadingHist(false);
-    
-    setEconomics([]);
-    setLoadingEcon(false);
-    
-    setPsychology([]);
-    setLoadingPsych(false);
   }, []);
 
   const handleView = (googleId) => {
@@ -233,16 +217,6 @@ const UserDashboard = () => {
       });
     }
 
-    if (selectedCategory === "all" || selectedCategory === "chemistry") {
-      sections.push({
-        title: "Chemistry",
-        books: filterBooks(chemistry),
-        loading: loadingChem,
-        showAll: showAllChem,
-        toggleShowAll: () => setShowAllChem(!showAllChem),
-      });
-    }
-
     if (selectedCategory === "all" || selectedCategory === "biology") {
       sections.push({
         title: "Biology",
@@ -250,46 +224,6 @@ const UserDashboard = () => {
         loading: loadingBio,
         showAll: showAllBio,
         toggleShowAll: () => setShowAllBio(!showAllBio),
-      });
-    }
-
-    if (selectedCategory === "all" || selectedCategory === "medicine") {
-      sections.push({
-        title: "Medicine",
-        books: filterBooks(medicine),
-        loading: loadingMed,
-        showAll: showAllMed,
-        toggleShowAll: () => setShowAllMed(!showAllMed),
-      });
-    }
-
-    if (selectedCategory === "all" || selectedCategory === "history") {
-      sections.push({
-        title: "History",
-        books: filterBooks(history),
-        loading: loadingHist,
-        showAll: showAllHist,
-        toggleShowAll: () => setShowAllHist(!showAllHist),
-      });
-    }
-
-    if (selectedCategory === "all" || selectedCategory === "economics") {
-      sections.push({
-        title: "Economics",
-        books: filterBooks(economics),
-        loading: loadingEcon,
-        showAll: showAllEcon,
-        toggleShowAll: () => setShowAllEcon(!showAllEcon),
-      });
-    }
-
-    if (selectedCategory === "all" || selectedCategory === "psychology") {
-      sections.push({
-        title: "Psychology",
-        books: filterBooks(psychology),
-        loading: loadingPsych,
-        showAll: showAllPsych,
-        toggleShowAll: () => setShowAllPsych(!showAllPsych),
       });
     }
 
