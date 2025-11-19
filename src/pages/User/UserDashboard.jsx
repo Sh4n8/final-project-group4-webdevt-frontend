@@ -12,39 +12,38 @@ const theme = {
   accent: "#7b4b26",
 };
 
-// NEW BEAUTIFUL BOOK CARD (No image needed!)
 const BookCard = ({ book, onView }) => {
   const authors = Array.isArray(book.authors)
     ? book.authors.join(", ")
     : "Unknown Author";
-
+  const thumbnail =
+    book.thumbnail || "https://via.placeholder.com/128x192?text=No+Cover";
   return (
     <div
+      className="rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer"
+      style={{ background: theme.panel }}
       onClick={() => onView(book.googleId)}
-      className="group cursor-pointer h-64 rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 border border-amber-200 overflow-hidden transform hover:-translate-y-1"
-      style={{
-        background: "linear-gradient(135deg, #faf5e9 0%, #f0e6d6 100%)",
-      }}
     >
-      {/* Subtle decorative blobs */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-6 left-6 w-20 h-20 bg-amber-300 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-8 right-8 w-24 h-24 bg-amber-400 rounded-full blur-3xl"></div>
+      <div className="h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
+        <img
+          src={thumbnail}
+          alt={book.title}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.target.src = "https://via.placeholder.com/128x192?text=No+Cover";
+          }}
+        />
       </div>
-
-      {/* Content */}
-      <div className="relative h-full flex flex-col items-center justify-center px-6 py-8 text-center">
-        <h3 className="font-bold text-lg md:text-xl text-amber-900 leading-tight line-clamp-3 group-hover:text-amber-800 transition-colors">
+      <div className="p-3">
+        <h3
+          className="text-sm font-semibold line-clamp-2"
+          style={{ color: theme.text }}
+        >
           {book.title}
         </h3>
-        <p className="mt-4 text-amber-700 font-medium text-sm tracking-wide">
+        <p className="text-xs mt-1 line-clamp-1" style={{ color: "#6b5446" }}>
           {authors}
         </p>
-
-        {/* Hover hint */}
-        <span className="absolute bottom-5 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-xs font-semibold text-amber-600">
-          View Details →
-        </span>
       </div>
     </div>
   );
@@ -52,12 +51,11 @@ const BookCard = ({ book, onView }) => {
 
 const Section = ({ title, books, loading, onView, showAll, toggleShowAll }) => {
   const visibleBooks = showAll ? books : books.slice(0, 6);
-
   return (
-    <div className="mb-12">
-      <div className="flex items-center justify-between mb-6">
+    <div className="mb-10">
+      <div className="flex items-center justify-between mb-4">
         <h2
-          className="text-2xl font-serif font-bold"
+          className="text-xl font-serif font-bold"
           style={{ color: theme.text }}
         >
           {title}
@@ -65,33 +63,32 @@ const Section = ({ title, books, loading, onView, showAll, toggleShowAll }) => {
         {books.length > 6 && (
           <button
             onClick={toggleShowAll}
-            className="text-sm font-semibold underline hover:opacity-80 transition"
+            className="text-sm font-medium underline hover:opacity-80"
             style={{ color: theme.accent }}
           >
             {showAll ? "Show Less" : "View All"}
           </button>
         )}
       </div>
-
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="h-64 rounded-xl animate-pulse"
+              className="h-64 rounded-lg animate-pulse"
               style={{ background: "#eadfc6" }}
-            />
+            ></div>
           ))}
         </div>
       ) : books.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {visibleBooks.map((b) => (
             <BookCard key={b.googleId} book={b} onView={onView} />
           ))}
         </div>
       ) : (
-        <p className="text-center py-10 text-amber-700">
-          No books found in this category.
+        <p className="text-sm" style={{ color: "#6b5446" }}>
+          No results found.
         </p>
       )}
     </div>
@@ -102,7 +99,6 @@ const UserDashboard = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // State for each category
   const [mathematics, setMathematics] = useState([]);
   const [programming, setProgramming] = useState([]);
   const [physics, setPhysics] = useState([]);
@@ -121,13 +117,13 @@ const UserDashboard = () => {
   const [showAllEng, setShowAllEng] = useState(false);
   const [showAllBio, setShowAllBio] = useState(false);
 
-  // Search & Filter
-  const [searchQuery, setSearchQuery] = useState(
-    () => sessionStorage.getItem("dashboardSearch") || ""
-  );
-  const [selectedCategory, setSelectedCategory] = useState(
-    () => sessionStorage.getItem("dashboardCategory") || "all"
-  );
+  // Search and filter states - restore from sessionStorage on mount
+  const [searchQuery, setSearchQuery] = useState(() => {
+    return sessionStorage.getItem("dashboardSearch") || "";
+  });
+  const [selectedCategory, setSelectedCategory] = useState(() => {
+    return sessionStorage.getItem("dashboardCategory") || "all";
+  });
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
 
   const categories = [
@@ -140,90 +136,102 @@ const UserDashboard = () => {
   ];
 
   useEffect(() => {
+    // Use demo books instead of API to avoid rate limiting
     setMathematics(demoBooks.mathematics || []);
-    setProgramming(demoBooks.programming || []);
-    setPhysics(demoBooks.physics || []);
-    setEngineering(demoBooks.engineering || []);
-    setBiology(demoBooks.biology || []);
-
     setLoadingMath(false);
+
+    setProgramming(demoBooks.programming || []);
     setLoadingProg(false);
+
+    setPhysics(demoBooks.physics || []);
     setLoadingPhys(false);
+
+    setEngineering(demoBooks.engineering || []);
     setLoadingEng(false);
+
+    setBiology(demoBooks.biology || []);
     setLoadingBio(false);
   }, []);
 
   const handleView = (googleId) => {
+    // Save current state before navigating
     sessionStorage.setItem("dashboardCategory", selectedCategory);
     sessionStorage.setItem("dashboardSearch", searchQuery);
     navigate(`/dashboard/book/${googleId}`);
   };
 
+  // Filter books based on search query
   const filterBooks = (books) => {
     if (!searchQuery) return books;
-    const query = searchQuery.toLowerCase();
     return books.filter((book) => {
       const title = book.title?.toLowerCase() || "";
       const authors = Array.isArray(book.authors)
         ? book.authors.join(" ").toLowerCase()
         : "";
+      const query = searchQuery.toLowerCase();
       return title.includes(query) || authors.includes(query);
     });
   };
 
+  // Get filtered sections based on category selection
   const getVisibleSections = () => {
     const sections = [];
 
-    if (selectedCategory === "all" || selectedCategory === "mathematics")
+    if (selectedCategory === "all" || selectedCategory === "mathematics") {
       sections.push({
         title: "Mathematics",
         books: filterBooks(mathematics),
         loading: loadingMath,
         showAll: showAllMath,
-        toggleShowAll: () => setShowAllMath((prev) => !prev),
+        toggleShowAll: () => setShowAllMath(!showAllMath),
       });
+    }
 
-    if (selectedCategory === "all" || selectedCategory === "programming")
+    if (selectedCategory === "all" || selectedCategory === "programming") {
       sections.push({
         title: "Programming & Computer Science",
         books: filterBooks(programming),
         loading: loadingProg,
         showAll: showAllProg,
-        toggleShowAll: () => setShowAllProg((prev) => !prev),
+        toggleShowAll: () => setShowAllProg(!showAllProg),
       });
+    }
 
-    if (selectedCategory === "all" || selectedCategory === "physics")
+    if (selectedCategory === "all" || selectedCategory === "physics") {
       sections.push({
         title: "Physics",
         books: filterBooks(physics),
         loading: loadingPhys,
         showAll: showAllPhys,
-        toggleShowAll: () => setShowAllPhys((prev) => !prev),
+        toggleShowAll: () => setShowAllPhys(!showAllPhys),
       });
+    }
 
-    if (selectedCategory === "all" || selectedCategory === "engineering")
+    if (selectedCategory === "all" || selectedCategory === "engineering") {
       sections.push({
         title: "Engineering",
         books: filterBooks(engineering),
         loading: loadingEng,
         showAll: showAllEng,
-        toggleShowAll: () => setShowAllEng((prev) => !prev),
+        toggleShowAll: () => setShowAllEng(!showAllEng),
       });
+    }
 
-    if (selectedCategory === "all" || selectedCategory === "biology")
+    if (selectedCategory === "all" || selectedCategory === "biology") {
       sections.push({
         title: "Biology",
         books: filterBooks(biology),
         loading: loadingBio,
         showAll: showAllBio,
-        toggleShowAll: () => setShowAllBio((prev) => !prev),
+        toggleShowAll: () => setShowAllBio(!showAllBio),
       });
+    }
 
     return sections;
   };
 
   const selectedCategoryLabel =
-    categories.find((c) => c.value === selectedCategory)?.label ||
+    categories.find((cat) => cat.value === selectedCategory)?.label ||
     "All Categories";
 
   return (
@@ -231,17 +239,17 @@ const UserDashboard = () => {
       style={{ minHeight: "100vh", background: theme.bg, color: theme.text }}
     >
       <UserNavBar />
-
-      <div className="container mx-auto px-6 py-10">
+      <div className="container mx-auto px-6 py-8">
         <h1
-          className="text-4xl font-serif font-bold mb-10 text-center md:text-left"
+          className="text-3xl font-serif font-bold mb-8"
           style={{ color: theme.text }}
         >
           Educational Library
         </h1>
 
-        {/* Search + Category */}
-        <div className="mb-10 flex flex-col md:flex-row gap-6 max-w-4xl mx-auto">
+        {/* Search Bar and Category Filter */}
+        <div className="mb-8 flex flex-col sm:flex-row gap-4">
+          {/* Search Bar */}
           <div className="relative flex-1">
             <input
               type="text"
@@ -251,7 +259,7 @@ const UserDashboard = () => {
                 setSearchQuery(e.target.value);
                 sessionStorage.setItem("dashboardSearch", e.target.value);
               }}
-              className="w-full pl-12 pr-6 py-4 rounded-xl border focus:outline-none focus:ring-4 focus:ring-amber-200 transition"
+              className="w-full pl-10 pr-4 py-3 border rounded-lg text-sm focus:outline-none focus:ring-2"
               style={{
                 background: "#fff",
                 borderColor: "#D4B896",
@@ -259,7 +267,7 @@ const UserDashboard = () => {
               }}
             />
             <svg
-              className="w-6 h-6 absolute left-4 top-1/2 -translate-y-1/2"
+              className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2"
               style={{ color: theme.accent }}
               fill="none"
               stroke="currentColor"
@@ -274,19 +282,20 @@ const UserDashboard = () => {
             </svg>
           </div>
 
-          <div className="relative md:w-80">
+          {/* Category Filter Dropdown */}
+          <div className="relative sm:w-64">
             <button
               onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-              className="w-full px-6 py-4 rounded-xl border flex items-center justify-between font-medium transition hover:bg-amber-50"
+              className="w-full px-4 py-3 border rounded-lg text-sm font-medium flex items-center justify-between focus:outline-none focus:ring-2"
               style={{
                 background: "#fff",
                 borderColor: "#D4B896",
                 color: theme.text,
               }}
             >
-              {selectedCategoryLabel}
+              <span>{selectedCategoryLabel}</span>
               <svg
-                className={`w-5 h-5 transition ${
+                className={`w-4 h-4 transition-transform ${
                   isCategoryDropdownOpen ? "rotate-180" : ""
                 }`}
                 fill="none"
@@ -304,7 +313,7 @@ const UserDashboard = () => {
 
             {isCategoryDropdownOpen && (
               <div
-                className="absolute top-full mt-2 w-full rounded-xl shadow-xl border border-amber-200 overflow-hidden z-50"
+                className="absolute top-full mt-2 w-full rounded-lg shadow-lg py-2 z-50 max-h-64 overflow-y-auto"
                 style={{ background: "#fff" }}
               >
                 {categories.map((cat) => (
@@ -315,12 +324,13 @@ const UserDashboard = () => {
                       sessionStorage.setItem("dashboardCategory", cat.value);
                       setIsCategoryDropdownOpen(false);
                     }}
-                    className="w-full text-left px-6 py-3 hover:bg-amber-50 transition"
+                    className="w-full text-left px-4 py-2 text-sm transition-colors"
                     style={{
-                      color:
+                      color: theme.text,
+                      background:
                         selectedCategory === cat.value
-                          ? theme.accent
-                          : theme.text,
+                          ? theme.panel
+                          : "transparent",
                     }}
                   >
                     {cat.label}
@@ -332,11 +342,17 @@ const UserDashboard = () => {
         </div>
 
         {/* Book Sections */}
-        <div className="space-y-16">
-          {getVisibleSections().map((section) => (
-            <Section key={section.title} {...section} onView={handleView} />
-          ))}
-        </div>
+        {getVisibleSections().map((section) => (
+          <Section
+            key={section.title}
+            title={section.title}
+            books={section.books}
+            loading={section.loading}
+            onView={handleView}
+            showAll={section.showAll}
+            toggleShowAll={section.toggleShowAll}
+          />
+        ))}
       </div>
     </div>
   );
