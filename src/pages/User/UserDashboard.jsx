@@ -175,7 +175,7 @@ const UserDashboard = () => {
         { name: "biology", setter: setBiology, loader: setLoadingBio },
       ];
 
-      // Load each category one at a time with 800ms delay
+      // Load each category one at a time with 3 second delay to avoid rate limiting
       for (const category of categoriesToFetch) {
         category.loader(true);
         try {
@@ -183,13 +183,19 @@ const UserDashboard = () => {
           category.setter(res.data.books || []);
         } catch (err) {
           console.error(`${category.name} fetch error:`, err);
+          // If rate limited, still show empty but don't break
+          if (err.response?.status === 429) {
+            console.warn(
+              `Rate limited on ${category.name}, will retry on next page load`
+            );
+          }
           category.setter([]);
         } finally {
           category.loader(false);
         }
 
-        // Wait 2000ms (2 seconds) before next request to avoid rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        // Wait 3000ms (3 seconds) before next request to avoid rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 3000));
       }
     };
 
