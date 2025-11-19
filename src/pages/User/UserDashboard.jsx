@@ -192,8 +192,7 @@ const UserDashboard = () => {
           category.loader(false);
         }
 
-        // Wait 800ms before next request to avoid rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
     };
 
