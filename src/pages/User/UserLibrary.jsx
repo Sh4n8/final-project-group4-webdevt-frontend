@@ -6,126 +6,97 @@ import UserNavBar from "../../components/UserNavBar";
 
 const theme = {
   bg: "#f8f1e4",
-  panel: "#e6d6b8",
   text: "#3b2f2f",
   accent: "#7b4b26",
+  muted: "#6b5446",
 };
 
-const BookCard = ({ book, onView, onRemove }) => {
-  const authors = Array.isArray(book.authors)
-    ? book.authors.join(", ")
-    : "Unknown Author";
-
-  const thumbnail =
-    book.thumbnail || "https://via.placeholder.com/300x450?text=No+Cover";
+const BookCard = ({ book, onRemove }) => {
+  const navigate = useNavigate();
+  const authors = Array.isArray(book.authors) ? book.authors.join(", ") : book.authors || "Unknown";
+  const cover = book.thumbnail || "https://via.placeholder.com/300x450/e6d6b8/7b4b26?text=No+Cover";
 
   return (
     <div
-      className="rounded-xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group cursor-pointer flex flex-col"
-      style={{ background: theme.panel }}
-      onClick={() => onView(book.googleId)}
+      onClick={() => navigate(`/dashboard/book/${book.googleId}`)}
+      className="flex-none w-36 cursor-pointer group relative"
     >
-      {/* Remove button */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           onRemove(book.googleId);
         }}
-        className="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center hover:bg-red-600"
-        style={{ fontFamily: "'Arial', 'Helvetica', sans-serif" }}
+        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-500/90 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 flex items-center justify-center hover:bg-red-600"
         title="Remove"
       >
-        ×
+        X
       </button>
 
-      {/* FULL COVER DISPLAY — FIXED */}
-      <div className="w-full h-56 bg-white flex items-center justify-center overflow-hidden">
-        <img
-          src={thumbnail}
-          alt={book.title}
-          className="w-full h-full object-contain"
-          onError={(e) => {
-            e.target.src = "https://via.placeholder.com/300x450?text=No+Cover";
-          }}
-        />
+      <div className="bg-white rounded-md shadow-sm group-hover:shadow-md transition-all duration-300 p-3 border border-transparent group-hover:border-[#d4b896]">
+        <img src={cover} alt={book.title} className="w-full h-52 object-contain" loading="lazy" />
       </div>
 
-      {/* Book details */}
-      <div className="p-3 flex flex-col flex-1">
-        {/* Multi-line title */}
-        <h3
-          className="font-semibold text-sm leading-tight line-clamp-2"
-          style={{ color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}
-        >
+      <div className="mt-2 text-center">
+        <h3 className="text-xs leading-tight line-clamp-2" style={{ color: theme.text, fontFamily: "'Georgia', serif" }}>
           {book.title}
         </h3>
-
-        {/* Multi-line authors */}
-        <p
-          className="text-xs mt-1 leading-tight line-clamp-2"
-          style={{ color: "#6b5446", fontFamily: "'Arial', 'Helvetica', sans-serif" }}
-        >
+        <p className="text-xs mt-1 leading-tight" style={{ color: theme.muted }}>
           {authors}
         </p>
-
-        {book.category && (
-          <p className="text-xs mt-1" style={{ color: theme.accent, fontFamily: "'Arial', 'Helvetica', sans-serif" }}>
-            {book.category}
-          </p>
-        )}
       </div>
     </div>
   );
 };
 
-const LibrarySection = ({ title, books, onView, onRemove, emptyMessage }) => {
-  return (
-    <div className="mb-10">
-      <div className="flex items-center justify-between mb-4">
-        <h2
-          className="text-xl font-bold"
-          style={{ color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}
-        >
-          {title}
-          <span
-            className="text-sm font-normal ml-2"
-            style={{ color: "#6b5446", fontFamily: "'Arial', 'Helvetica', sans-serif" }}
-          >
-            ({books.length} books)
-          </span>
-        </h2>
-      </div>
+const EmptyShelf = ({ message }) => (
+  <div className="py-8 text-center">
+    <p className="text-sm italic" style={{ color: theme.muted, fontFamily: "'Georgia', serif" }}>
+      {message}
+    </p>
+  </div>
+);
 
-      {books.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-          {books.map((book) => (
-            <BookCard
-              key={book.googleId || book._id}
-              book={book}
-              onView={onView}
-              onRemove={onRemove}
-            />
+const LibraryShelf = ({ title, books, onRemove, icon }) => {
+  if (books.length === 0) {
+    return (
+      <section className="mb-10">
+        <h2 className="text-base mb-4 flex items-center gap-2" style={{ color: theme.text, fontFamily: "'Georgia', serif" }}>
+          {icon} {title}
+        </h2>
+        <EmptyShelf message={`No books in ${title.toLowerCase()} yet.`} />
+      </section>
+    );
+  }
+
+  return (
+    <section className="mb-10">
+      <h2 className="text-base mb-4 flex items-center gap-2" style={{ color: theme.text, fontFamily: "'Georgia', serif" }}>
+        {icon} {title}
+        <span className="text-xs" style={{ color: theme.muted }}>
+          ({books.length})
+        </span>
+      </h2>
+
+      <div className="overflow-x-auto pb-3 -mx-4 px-4 scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+        <style jsx>{`.scrollbar-hide::-webkit-scrollbar { display: none; }`}</style>
+        <div className="flex gap-6">
+          {books.map(book => (
+            <BookCard key={book.googleId || book._id} book={book} onRemove={onRemove} />
           ))}
         </div>
-      ) : (
-        <div
-          className="text-center py-12 rounded-lg"
-          style={{ background: theme.panel }}
-        >
-          <p className="text-sm" style={{ color: "#6b5446", fontFamily: "'Arial', 'Helvetica', sans-serif" }}>
-            {emptyMessage}
-          </p>
-        </div>
-      )}
-    </div>
+      </div>
+
+      <div className="text-right mt-1">
+        <span className="text-xs italic" style={{ color: theme.muted }}>
+          ← swipe →
+        </span>
+      </div>
+    </section>
   );
 };
 
 const UserLibrary = () => {
   const { user } = useContext(AuthContext);
-  const navigate = useNavigate();
-
-  // State for different reading lists
   const [readingList, setReadingList] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [thesis, setThesis] = useState([]);
@@ -133,130 +104,81 @@ const UserLibrary = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: Fetch user's saved books from backend
-    // For now, using mock data from localStorage
-    const loadSavedBooks = () => {
+    const load = () => {
       try {
-        const savedReadingList = JSON.parse(
-          localStorage.getItem("readingList") || "[]"
-        );
-        const savedFavorites = JSON.parse(
-          localStorage.getItem("favorites") || "[]"
-        );
-        const savedThesis = JSON.parse(localStorage.getItem("thesis") || "[]");
-        const savedJournals = JSON.parse(
-          localStorage.getItem("journals") || "[]"
-        );
-
-        setReadingList(savedReadingList);
-        setFavorites(savedFavorites);
-        setThesis(savedThesis);
-        setJournals(savedJournals);
-      } catch (err) {
-        console.error("Error loading saved books:", err);
-      } finally {
-        setLoading(false);
-      }
+        setReadingList(JSON.parse(localStorage.getItem("readingList") || "[]"));
+        setFavorites(JSON.parse(localStorage.getItem("favorites") || "[]"));
+        setThesis(JSON.parse(localStorage.getItem("thesis") || "[]"));
+        setJournals(JSON.parse(localStorage.getItem("journals") || "[]"));
+      } catch (e) { console.error(e); }
+      setLoading(false);
     };
-
-    loadSavedBooks();
+    load();
   }, []);
 
-  const handleView = (googleId) => {
-    navigate(`/dashboard/book/${googleId}`);
+  const removeFromList = (id, setter, key) => {
+    setter(prev => {
+      const updated = prev.filter(b => b.googleId !== id);
+      localStorage.setItem(key, JSON.stringify(updated));
+      return updated;
+    });
   };
 
-  const handleRemove = (googleId, listName) => {
-    // TODO: Remove from backend
-    // For now, remove from localStorage
-    const currentList = JSON.parse(localStorage.getItem(listName) || "[]");
-    const updatedList = currentList.filter(
-      (book) => book.googleId !== googleId
-    );
-    localStorage.setItem(listName, JSON.stringify(updatedList));
-
-    // Update state
-    switch (listName) {
-      case "readingList":
-        setReadingList(updatedList);
-        break;
-      case "favorites":
-        setFavorites(updatedList);
-        break;
-      case "thesis":
-        setThesis(updatedList);
-        break;
-      case "journals":
-        setJournals(updatedList);
-        break;
-    }
-  };
+  const total = readingList.length + favorites.length + thesis.length + journals.length;
 
   if (loading) {
     return (
-      <div style={{ minHeight: "100vh", background: theme.bg, fontFamily: "'Arial', 'Helvetica', sans-serif" }}>
-        <UserNavBar />
-        <div className="container mx-auto px-6 py-8 flex justify-center">
-          <div className="animate-pulse text-lg" style={{ color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}>
-            Loading your library...
-          </div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: theme.bg }}>
+        <p className="text-sm" style={{ color: theme.text, fontFamily: "'Georgia', serif" }}>
+          Loading your library...
+        </p>
       </div>
     );
   }
 
-  const totalBooks =
-    readingList.length + favorites.length + thesis.length + journals.length;
-
   return (
-    <div
-      style={{ minHeight: "100vh", background: theme.bg, color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}
-    >
-      <UserNavBar />
-      <div className="container mx-auto px-6 py-8">
-        <div className="mb-8">
-          <h1
-            className="text-3xl font-bold"
-            style={{ color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}
-          >
-            My Library
-          </h1>
-          <p className="text-sm mt-2" style={{ color: "#6b5446", fontFamily: "'Arial', 'Helvetica', sans-serif" }}>
-            {totalBooks} {totalBooks === 1 ? "book" : "books"} in your personal
-            collection
-          </p>
-        </div>
+    <div className="min-h-screen" style={{ background: theme.bg }}>
+      {/* Sticky Navbar */}
+      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-[#d4b896]">
+        <UserNavBar />
+      </div>
 
-        <LibrarySection
-          title="My Reading List"
+      {/* Main Content - EXACT same as Educational Library */}
+      <div className="container mx-auto px-6 py-10 max-w-6xl">
+        {/* BIG, BEAUTIFUL TITLE - matches 100% */}
+        <h1 className="text-4xl text-center mb-10" style={{ color: theme.text, fontFamily: "'Georgia', serif" }}>
+          My Library
+        </h1>
+
+        {/* Subtle total count */}
+        <p className="text-center text-sm mb-12" style={{ color: theme.muted }}>
+          {total === 0 ? "Your personal collection is waiting to grow..." : `${total} book${total > 1 ? 's' : ''} in your library`}
+        </p>
+
+        {/* Shelves */}
+        <LibraryShelf
+          title="Reading List"
           books={readingList}
-          onView={handleView}
-          onRemove={(id) => handleRemove(id, "readingList")}
-          emptyMessage="No books in your reading list yet. Start exploring and add books!"
+          icon="Open Book"
+          onRemove={(id) => removeFromList(id, setReadingList, "readingList")}
         />
-
-        <LibrarySection
+        <LibraryShelf
           title="Favorites"
           books={favorites}
-          onView={handleView}
-          onRemove={(id) => handleRemove(id, "favorites")}
-          emptyMessage="No favorite books yet. Mark books as favorites to see them here!"
+          icon="Red Heart"
+          onRemove={(id) => removeFromList(id, setFavorites, "favorites")}
         />
-
-        <LibrarySection
-          title="Thesis Materials"
+        <LibraryShelf
+          title="Thesis"
           books={thesis}
-          onView={handleView}
-          onRemove={(id) => handleRemove(id, "thesis")}
-          emptyMessage="No thesis materials saved yet."
+          icon="Graduation Cap"
+          onRemove={(id) => removeFromList(id, setThesis, "thesis")}
         />
-
-        <LibrarySection
-          title="Journals & Research"
+        <LibraryShelf
+          title="Journals"
           books={journals}
-          onView={handleView}
-          onRemove={(id) => handleRemove(id, "journals")}
-          emptyMessage="No journals saved yet."
+          icon="Clipboard"
+          onRemove={(id) => removeFromList(id, setJournals, "journals")}
         />
       </div>
     </div>
