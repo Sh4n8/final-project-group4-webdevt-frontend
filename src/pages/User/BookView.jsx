@@ -1,8 +1,7 @@
-<<<<<<<<< Temporary merge branch 1
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+// …rest of your file
 import UserNavbar from "../../components/UserNavBar.jsx";
-=========
 // src/pages/User/BookView.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
