@@ -3,18 +3,19 @@ import axios from "axios";
 
 const isDev = import.meta.env.DEV;
 
-
+// Use Railway URL by default, localhost only in development
 const baseURL = isDev
-  ? "http://localhost:5000" // Use full URL in dev for proper CORS
-  : import.meta.env.VITE_API_URL || "http://localhost:5000";
+  ? "http://localhost:5000"
+  : import.meta.env.VITE_API_URL || "https://final-project-group4-webdevt-backend-production-48cb.up.railway.app";
 
 const api = axios.create({
   baseURL,
-  timeout: 12_000,
+  timeout: 30000, // Increased timeout to 30 seconds
   headers: { "Content-Type": "application/json" },
-  withCredentials: true, // Added for credentials support
+  withCredentials: true,
 });
 
+// Development logging
 if (isDev) {
   api.interceptors.request.use((cfg) => {
     console.log(`[API] ${cfg.method?.toUpperCase()} ${cfg.url}`);
@@ -23,33 +24,48 @@ if (isDev) {
   });
 }
 
+// Enhanced error logging
 api.interceptors.response.use(
   (r) => r,
   (e) => {
     console.error("[API Error]", e.response?.data || e.message);
     console.error("[API Error] Status:", e.response?.status);
     console.error("[API Error] URL:", e.config?.url);
+    console.error("[API Error] Base URL:", e.config?.baseURL);
+    
+    // Log CORS errors specifically
+    if (!e.response) {
+      console.error("[API Error] This might be a CORS or network error");
+    }
+    
     return Promise.reject(e);
   }
 );
 
 // Auth token management
 export const setAuthToken = (token) => {
-  if (token) api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-  else delete api.defaults.headers.common["Authorization"];
+  if (token) {
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    console.log("[API] Auth token set");
+  } else {
+    delete api.defaults.headers.common["Authorization"];
+    console.log("[API] Auth token removed");
+  }
 };
 
-export const removeAuthToken = () =>
+export const removeAuthToken = () => {
   delete api.defaults.headers.common["Authorization"];
+  console.log("[API] Auth token cleared");
+};
 
-// User endpoints 
+// User endpoints
 export const registerUser = (data) => api.post("/api/users/register", data);
 export const loginUser = (data) => api.post("/api/users/login", data);
 export const getProfile = () => api.get("/api/users/profile");
 export const checkCredential = (c) =>
   api.get("/api/users/check-credential", { params: { credential: c } });
 
-// Book endpoints 
+// Book endpoints
 export const searchBooks = (query, maxResults = 20) =>
   api.get("/api/books/search", { params: { query, maxResults } });
 
