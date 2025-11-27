@@ -80,21 +80,23 @@ const BookView = () => {
 
   const handleDone = () => {
     const bookData = {
-      googleId: book.googleId,
+      googleId: book.googleId || book.id, // ✅ Add fallback
       title: book.title,
       authors: book.authors,
       thumbnail: book.thumbnail,
       categories: book.categories,
     };
 
-    // ✔️ Combine default + custom lists
-    const allLists = [...Object.keys(selectedLists), ...customLists];
+    // Get all list names (default + custom)
+    const defaultLists = ["readingList", "favorites", "thesis", "journals"];
+    const allLists = [...defaultLists, ...customLists];
 
     allLists.forEach((listName) => {
       if (selectedLists[listName]) {
         const currentList = JSON.parse(localStorage.getItem(listName) || "[]");
-
-        const exists = currentList.some((b) => b.googleId === book.googleId);
+        const exists = currentList.some(
+          (b) => b.googleId === book.googleId || b.googleId === book.id
+        );
 
         if (!exists) {
           currentList.push(bookData);
@@ -294,7 +296,10 @@ const BookView = () => {
                   >
                     {/* Header */}
                     <div className="flex justify-between items-center mb-3">
-                      <h3 className="font-semibold text-sm" style={{ color: theme.text }}>
+                      <h3
+                        className="font-semibold text-sm"
+                        style={{ color: theme.text }}
+                      >
                         Add to
                       </h3>
                       <button
@@ -322,7 +327,10 @@ const BookView = () => {
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-base">📚</span>
-                            <span className="text-sm font-medium" style={{ color: theme.text }}>
+                            <span
+                              className="text-sm font-medium"
+                              style={{ color: theme.text }}
+                            >
                               {list.label}
                             </span>
                           </div>
@@ -346,7 +354,10 @@ const BookView = () => {
                         >
                           <div className="flex items-center gap-2">
                             <span className="text-base">📝</span>
-                            <span className="text-sm font-medium" style={{ color: theme.text }}>
+                            <span
+                              className="text-sm font-medium"
+                              style={{ color: theme.text }}
+                            >
                               {name}
                             </span>
                           </div>
