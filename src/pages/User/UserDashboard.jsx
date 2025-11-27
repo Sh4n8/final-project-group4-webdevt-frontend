@@ -44,7 +44,10 @@ const BookCard = ({ book, onView }) => {
         {/* FIXED: Multi-line title */}
         <h3
           className="font-semibold text-sm leading-tight line-clamp-2"
-          style={{ color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}
+          style={{
+            color: theme.text,
+            fontFamily: "'Arial', 'Helvetica', sans-serif",
+          }}
         >
           {book.title}
         </h3>
@@ -52,7 +55,10 @@ const BookCard = ({ book, onView }) => {
         {/* FIXED: Multi-line authors */}
         <p
           className="text-xs mt-1 leading-tight line-clamp-2"
-          style={{ color: "#6b5446", fontFamily: "'Arial', 'Helvetica', sans-serif" }}
+          style={{
+            color: "#6b5446",
+            fontFamily: "'Arial', 'Helvetica', sans-serif",
+          }}
         >
           {authors}
         </p>
@@ -60,7 +66,13 @@ const BookCard = ({ book, onView }) => {
         {book.averageRating && (
           <div className="flex items-center gap-1 mt-2">
             <span className="text-yellow-600 text-xs">★</span>
-            <span className="text-xs" style={{ color: theme.accent, fontFamily: "'Arial', 'Helvetica', sans-serif" }}>
+            <span
+              className="text-xs"
+              style={{
+                color: theme.accent,
+                fontFamily: "'Arial', 'Helvetica', sans-serif",
+              }}
+            >
               {book.averageRating}
             </span>
           </div>
@@ -80,7 +92,10 @@ const Section = ({ title, books, loading, onView, showAll, toggleShowAll }) => {
       <div className="flex items-center justify-between mb-4">
         <h2
           className="text-2xl font-bold"
-          style={{ color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}
+          style={{
+            color: theme.text,
+            fontFamily: "'Arial', 'Helvetica', sans-serif",
+          }}
         >
           {title}
         </h2>
@@ -89,7 +104,10 @@ const Section = ({ title, books, loading, onView, showAll, toggleShowAll }) => {
           <button
             onClick={toggleShowAll}
             className="text-sm font-medium underline hover:opacity-80"
-            style={{ color: theme.accent, fontFamily: "'Arial', 'Helvetica', sans-serif" }}
+            style={{
+              color: theme.accent,
+              fontFamily: "'Arial', 'Helvetica', sans-serif",
+            }}
           >
             {showAll ? "Show Less" : "View All"}
           </button>
@@ -114,7 +132,13 @@ const Section = ({ title, books, loading, onView, showAll, toggleShowAll }) => {
           ))}
         </div>
       ) : (
-        <p className="text-sm mt-2" style={{ color: "#6b5446", fontFamily: "'Arial', 'Helvetica', sans-serif" }}>
+        <p
+          className="text-sm mt-2"
+          style={{
+            color: "#6b5446",
+            fontFamily: "'Arial', 'Helvetica', sans-serif",
+          }}
+        >
           No results found.
         </p>
       )}
@@ -189,7 +213,7 @@ const UserDashboard = () => {
       loaderSetter(true);
       try {
         const res = await getBooksByCategory(category, 20);
-        setter(res.data.books || []);
+        setter(res.data.items || []);
       } catch (err) {
         console.error(`${category} fetch error:`, err);
         setter([]);
@@ -243,20 +267,40 @@ const UserDashboard = () => {
       }
     };
 
-    pushSection("mathematics", "Mathematics", mathematics, loadingMath, showAllMath, () =>
-      setShowAllMath(!showAllMath)
+    pushSection(
+      "mathematics",
+      "Mathematics",
+      mathematics,
+      loadingMath,
+      showAllMath,
+      () => setShowAllMath(!showAllMath)
     );
-    pushSection("programming", "Programming & Computer Science", programming, loadingProg, showAllProg, () =>
-      setShowAllProg(!showAllProg)
+    pushSection(
+      "programming",
+      "Programming & Computer Science",
+      programming,
+      loadingProg,
+      showAllProg,
+      () => setShowAllProg(!showAllProg)
     );
     pushSection("physics", "Physics", physics, loadingPhys, showAllPhys, () =>
       setShowAllPhys(!showAllPhys)
     );
-    pushSection("engineering", "Engineering", engineering, loadingEng, showAllEng, () =>
-      setShowAllEng(!showAllEng)
+    pushSection(
+      "engineering",
+      "Engineering",
+      engineering,
+      loadingEng,
+      showAllEng,
+      () => setShowAllEng(!showAllEng)
     );
-    pushSection("chemistry", "Chemistry", chemistry, loadingChem, showAllChem, () =>
-      setShowAllChem(!showAllChem)
+    pushSection(
+      "chemistry",
+      "Chemistry",
+      chemistry,
+      loadingChem,
+      showAllChem,
+      () => setShowAllChem(!showAllChem)
     );
     pushSection("biology", "Biology", biology, loadingBio, showAllBio, () =>
       setShowAllBio(!showAllBio)
@@ -267,11 +311,21 @@ const UserDashboard = () => {
     pushSection("history", "History", history, loadingHist, showAllHist, () =>
       setShowAllHist(!showAllHist)
     );
-    pushSection("economics", "Economics", economics, loadingEcon, showAllEcon, () =>
-      setShowAllEcon(!showAllEcon)
+    pushSection(
+      "economics",
+      "Economics",
+      economics,
+      loadingEcon,
+      showAllEcon,
+      () => setShowAllEcon(!showAllEcon)
     );
-    pushSection("psychology", "Psychology", psychology, loadingPsych, showAllPsych, () =>
-      setShowAllPsych(!showAllPsych)
+    pushSection(
+      "psychology",
+      "Psychology",
+      psychology,
+      loadingPsych,
+      showAllPsych,
+      () => setShowAllPsych(!showAllPsych)
     );
 
     return sections;
@@ -282,20 +336,29 @@ const UserDashboard = () => {
     "All Categories";
 
   return (
-    <div style={{ minHeight: "100vh", background: theme.bg, color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: theme.bg,
+        color: theme.text,
+        fontFamily: "'Arial', 'Helvetica', sans-serif",
+      }}
+    >
       <UserNavBar />
 
       <div className="container mx-auto px-6 py-8">
         <h1
           className="text-3xl font-bold mb-8"
-          style={{ color: theme.text, fontFamily: "'Arial', 'Helvetica', sans-serif" }}
+          style={{
+            color: theme.text,
+            fontFamily: "'Arial', 'Helvetica', sans-serif",
+          }}
         >
           Educational Library
         </h1>
 
         {/* Search + Filter */}
         <div className="mb-8 flex flex-col sm:flex-row gap-4">
-
           {/* Search Bar */}
           <div className="relative flex-1">
             <input
@@ -311,7 +374,7 @@ const UserDashboard = () => {
                 background: "#fff",
                 borderColor: "#D4B896",
                 color: theme.text,
-                fontFamily: "'Arial', 'Helvetica', sans-serif"
+                fontFamily: "'Arial', 'Helvetica', sans-serif",
               }}
             />
             <svg
@@ -333,15 +396,13 @@ const UserDashboard = () => {
           {/* Category Dropdown */}
           <div className="relative sm:w-64">
             <button
-              onClick={() =>
-                setIsCategoryDropdownOpen(!isCategoryDropdownOpen)
-              }
+              onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
               className="w-full px-4 py-3 border rounded-lg text-sm font-medium flex items-center justify-between focus:outline-none focus:ring-2"
               style={{
                 background: "#fff",
                 borderColor: "#D4B896",
                 color: theme.text,
-                fontFamily: "'Arial', 'Helvetica', sans-serif"
+                fontFamily: "'Arial', 'Helvetica', sans-serif",
               }}
             >
               <span>{selectedCategoryLabel}</span>
@@ -383,7 +444,7 @@ const UserDashboard = () => {
                         selectedCategory === cat.value
                           ? theme.panel
                           : "transparent",
-                      fontFamily: "'Arial', 'Helvetica', sans-serif"
+                      fontFamily: "'Arial', 'Helvetica', sans-serif",
                     }}
                   >
                     {cat.label}
